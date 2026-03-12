@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HUMMEL CREATIVE STUDIO — Board Presentation v2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg:       #08080f;
+    --surface:  #0f0f1a;
+    --card:     #13131f;
+    --border:   rgba(255,255,255,0.07);
+    --purple:   #6c5ce7;
+    --purple-l: #a29bfe;
+    --blue:     #4c6ef5;
+    --teal:     #00cec9;
+    --green:    #00b894;
+    --amber:    #fdcb6e;
+    --red:      #e17055;
+    --white:    #ffffff;
+    --text:     rgba(255,255,255,0.88);
+    --muted:    rgba(255,255,255,0.38);
+    --label:    rgba(255,255,255,0.18);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    user-select: none;
+  }
+
+  .deck { position: relative; width: 100vw; height: 100vh; }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 52px 80px;
+    opacity: 0;
+    transform: translateX(60px);
+    transition: opacity .42s cubic-bezier(.4,0,.2,1), transform .42s cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+  }
+  .slide.active  { opacity: 1; transform: translateX(0); pointer-events: all; }
+  .slide.exit-l  { opacity: 0; transform: translateX(-60px); transition: opacity .3s, transform .3s; }
+
+  .slide::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.013) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.013) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+  }
+
+  /* Nav */
+  .nav {
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 12px; z-index: 100;
+    background: rgba(255,255,255,.04); border: 1px solid var(--border);
+    border-radius: 100px; padding: 9px 20px; backdrop-filter: blur(12px);
+  }
+  .nav button { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 4px 10px; border-radius: 6px; transition: color .2s, background .2s; line-height: 1; }
+  .nav button:hover { color: var(--white); background: rgba(255,255,255,.08); }
+  .nav-dots { display: flex; gap: 6px; align-items: center; }
+  .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--label); cursor: pointer; transition: all .25s; }
+  .dot.active { width: 20px; border-radius: 3px; background: var(--purple-l); }
+  .slide-counter { font-size: 11px; letter-spacing: .1em; color: var(--muted); min-width: 36px; text-align: center; }
+
+  /* Type */
+  .eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--purple-l); margin-bottom: 14px; }
+  h1.display { font-family: 'Space Grotesk', sans-serif; font-size: clamp(3rem,6vw,6.5rem); font-weight: 700; letter-spacing: -.04em; line-height: .95; color: var(--white); }
+  h2.headline { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.9rem,3.6vw,3.4rem); font-weight: 700; letter-spacing: -.03em; line-height: 1.05; color: var(--white); margin-bottom: 8px; }
+  .accent       { color: var(--purple-l); }
+  .accent-green { color: var(--green); }
+  .accent-amber { color: var(--amber); }
+  .accent-teal  { color: var(--teal); }
+  .accent-red   { color: var(--red); }
+  .glow-purple  { text-shadow: 0 0 40px rgba(108,92,231,.5); color: var(--purple-l); }
+
+  /* Layout */
+  .max-w  { max-width: 1020px; width: 100%; }
+  .cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; width: 100%; }
+  .cols-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; width: 100%; }
+
+  /* Card */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px; }
+
+  /* Pill */
+  .pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(108,92,231,.12); border: 1px solid rgba(108,92,231,.25); border-radius: 100px; padding: 5px 14px; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--purple-l); margin-bottom: 24px; }
+  .dot-live { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 1.6s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* Bullets */
+  ul.bullets { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  ul.bullets li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: rgba(255,255,255,.68); line-height: 1.5; }
+  ul.bullets li::before { content:''; flex-shrink:0; width:5px; height:5px; margin-top:8px; border-radius:50%; background:var(--purple-l); }
+  ul.bullets li strong { color: var(--white); font-weight: 600; }
+
+  /* Status */
+  .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
+  .status-col { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; }
+  .status-col h4 { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 14px; }
+  .status-col.works h4  { color: var(--green); }
+  .status-col.danger h4 { color: var(--red); }
+  .status-item { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: rgba(255,255,255,.7); padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+  .status-item:last-child { border-bottom: none; }
+  .badge-ok { color: var(--green); font-size: 14px; flex-shrink: 0; }
+  .badge-no { color: var(--red);   font-size: 14px; flex-shrink: 0; }
+
+  /* Architecture */
+  .arch-stack { display: flex; flex-direction: column; gap: 7px; width: 100%; }
+  .arch-layer { display: flex; align-items: center; gap: 16px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 18px; position: relative; overflow: hidden; }
+  .arch-layer::before { content:''; position:absolute; left:0;top:0;bottom:0; width:3px; }
+  .arch-layer.l1::before { background: var(--green); }
+  .arch-layer.l2::before { background: var(--purple); }
+  .arch-layer.l3::before { background: var(--blue); }
+  .arch-layer.l4::before { background: var(--teal); }
+  .arch-layer.l5::before { background: var(--amber); }
+  .arch-layer.highlight { border-color: rgba(0,184,148,.35); background: rgba(0,184,148,.05); }
+  .arch-icon { font-size: 17px; width: 28px; text-align: center; flex-shrink:0; }
+  .arch-name { font-weight: 600; font-size: 13px; color: var(--white); min-width: 150px; }
+  .arch-tech { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--purple-l); }
+  .arch-badge { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 3px 10px; border-radius: 100px; }
+  .arch-badge.live  { background: rgba(0,184,148,.12); color: var(--green);    border: 1px solid rgba(0,184,148,.25); }
+  .arch-badge.build { background: rgba(108,92,231,.12); color: var(--purple-l); border: 1px solid rgba(108,92,231,.25); }
+
+  /* Flow */
+  .flow { display: flex; align-items: center; width: 100%; }
+  .flow-step { flex:1; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 12px; text-align:center; }
+  .flow-num   { font-size:10px; font-weight:700; letter-spacing:.12em; color:var(--purple-l); margin-bottom:6px; }
+  .flow-icon  { font-size:20px; margin-bottom:6px; }
+  .flow-label { font-size:11.5px; font-weight:600; color:var(--white); }
+  .flow-sub   { font-size:10px; color:var(--muted); margin-top:3px; }
+  .flow-arrow { color:var(--label); font-size:16px; flex-shrink:0; padding:0 4px; }
+
+  /* Info boxes */
+  .infobox { padding: 14px 20px; border-radius: 10px; font-size: 13.5px; line-height: 1.6; }
+  .infobox-green  { background: rgba(0,184,148,.06); border: 1px solid rgba(0,184,148,.18); }
+  .infobox-purple { background: rgba(108,92,231,.07); border: 1px solid rgba(108,92,231,.2); }
+  .infobox-amber  { background: rgba(253,203,110,.06); border: 1px solid rgba(253,203,110,.18); }
+
+  /* Tier / Pricing */
+  .tier { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .tier.featured { border-color: rgba(108,92,231,.5); background: rgba(108,92,231,.07); }
+  .tier-name  { font-size: 10px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); }
+  .tier-price { font-family: 'Space Grotesk',sans-serif; font-size: 1.8rem; font-weight: 700; color: var(--white); line-height: 1; }
+  .tier-price sup { font-size: .8rem; vertical-align: super; color: var(--muted); font-weight: 400; margin-right: 2px; }
+  .tier-credits { font-size: 11px; color: var(--purple-l); font-weight: 600; }
+  .tier ul { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-top: 6px; font-size: 12px; color: var(--muted); }
+  .tier ul li::before { content: '→ '; color: var(--purple-l); }
+
+  /* Big stat */
+  .big-stat .num { font-family:'Space Grotesk',sans-serif; font-size:clamp(2.4rem,4.5vw,4rem); font-weight:700; letter-spacing:-.04em; color:var(--white); line-height:1; }
+  .big-stat .lbl { font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-top:6px; }
+
+  /* Roadmap compact */
+  .rm-row { display:grid; grid-template-columns:120px 1fr auto; gap:16px; align-items:center; padding:14px 18px; background:var(--card); border:1px solid var(--border); border-radius:10px; }
+  .rm-phase-label { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
+  .rm-bar { height:6px; border-radius:3px; position:relative; }
+  .rm-milestone { font-size:12px; font-weight:600; color:var(--white); }
+
+  /* Risk grid */
+  .risk-item { display:flex; gap:14px; padding:16px 18px; background:var(--card); border:1px solid var(--border); border-radius:12px; }
+  .risk-icon { font-size:20px; flex-shrink:0; margin-top:2px; }
+  .risk-label { font-size:13px; font-weight:700; color:var(--white); margin-bottom:4px; }
+  .risk-text { font-size:12.5px; color:rgba(255,255,255,.55); line-height:1.5; }
+  .risk-mitigate { font-size:12px; color:var(--green); font-weight:600; margin-top:6px; }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 1: COVER                                                 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide active" data-index="0">
+  <div style="text-align:center;position:relative;z-index:1;max-width:860px;">
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);width:700px;height:320px;background:radial-gradient(ellipse,rgba(108,92,231,.12) 0%,transparent 68%);pointer-events:none;"></div>
+    <div class="pill"><span class="dot-live"></span>Board Presentation &mdash; Marts 2026</div>
+    <h1 class="display" style="text-align:center;margin-bottom:28px;">
+      AI Photo<br/>
+      <span class="glow-purple">Studio</span>
+    </h1>
+    <p style="font-size:clamp(1rem,1.8vw,1.35rem);color:var(--muted);line-height:1.7;max-width:620px;margin:0 auto 32px;">
+      Fra fungerende MVP til skalerbar platform.<br/>
+      <span style="color:rgba(255,255,255,.65);">Teknologien virker. Nu bygger vi forretningen.</span>
+    </p>
+    <div style="width:60px;height:2px;background:linear-gradient(90deg,var(--purple),var(--teal));margin:0 auto 28px;"></div>
+    <p style="font-size:11px;color:var(--label);letter-spacing:.12em;text-transform:uppercase;">Hummel Creative Studio</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 2: PROBLEMET                                             -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-index="1">
+  <div class="max-w">
+    <div class="eyebrow">01 &mdash; Problemet</div>
+    <h2 class="headline">Fotoshoots er <span class="accent-red">dyre, langsomme</span> og svære at skalere.</h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 28px;">Hvert eneste shoot kræver fotograf, model, studie, styling, rejse og postproduktion. Det tager uger og koster titusinder.</p>
+    <div class="cols-3" style="margin-bottom:22px;">
+      <div class="card" style="text-align:center;border-top:3px solid var(--red);">
+        <div style="font-size:28px;margin-bottom:14px;">&#x1F4B8;</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:2rem;font-weight:700;color:var(--red);line-height:1;">50&ndash;150k</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:.08em;text-transform:uppercase;">Kr. per shoot</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.5;">Fotograf, model, studie, styling, rejse, postproduktion</div>
+      </div>
+      <div class="card" style="text-align:center;border-top:3px solid var(--amber);">
+        <div style="font-size:28px;margin-bottom:14px;">&#x23F3;</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:2rem;font-weight:700;color:var(--amber);line-height:1;">2&ndash;4 uger</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:.08em;text-transform:uppercase;">Leadtime</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.5;">Planlægning, booking, shoot-dag, retouchering, godkendelse</div>
+      </div>
+      <div class="card" style="text-align:center;border-top:3px solid var(--purple);">
+        <div style="font-size:28px;margin-bottom:14px;">&#x1F504;</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:2rem;font-weight:700;color:var(--purple-l);line-height:1;">Begrænset</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:.08em;text-transform:uppercase;">Skalerbarhed</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.5;">Hvert nyt look, ny model eller ny sæson kræver et helt nyt shoot</div>
+      </div>
+    </div>
+    <div class="infobox infobox-purple" style="display:flex;align-items:center;gap:14px;">
+      <span style="font-size:20px;flex-shrink:0;">&#x1F4A1;</span>
+      <span style="color:rgba(255,255,255,.7);">
+        <strong style="color:var(--white);">Markedet er klar til disruption.</strong>
+        Runway, Midjourney og Adobe Firefly har vist at AI-genereret visuelt indhold er godt nok til produktion. Men ingen har bygget et dedikeret <strong style="color:var(--white);">fashion photo studio</strong> som SaaS.
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 3: LØSNINGEN — VI HAR BYGGET DET                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-index="2">
+  <div class="max-w">
+    <div class="eyebrow">02 &mdash; Løsningen</div>
+    <h2 class="headline">Vi har bygget et AI photo studio &mdash; og det <span class="accent-green">virker.</span></h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 28px;">En bruger kan lave et komplet, professionelt fotoshoot på minutter &mdash; helt uden fotograf, model eller studie.</p>
+    <div class="cols-3" style="margin-bottom:18px;">
+      <div class="card" style="border-color:rgba(0,184,148,.2);">
+        <div style="font-size:26px;margin-bottom:12px;">&#x1F9CD;</div>
+        <div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:8px;">1. Lav din model</div>
+        <ul class="bullets" style="font-size:12.5px;">
+          <li>Mand, kvinde, alder, look</li>
+          <li><strong>Front + back portrait</strong> upload</li>
+          <li>Ansigtsretning og udtryk</li>
+          <li>Fit scale og drape-indstillinger</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:rgba(108,92,231,.2);">
+        <div style="font-size:26px;margin-bottom:12px;">&#x1F455;</div>
+        <div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:8px;">2. Upload tøjet</div>
+        <ul class="bullets" style="font-size:12.5px;">
+          <li>Hvert tøjstykke uploades separat</li>
+          <li>AI fitter tøjet til modellen</li>
+          <li><strong>Brand-korrekt visning</strong></li>
+          <li>Drape og fold simulation</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:rgba(76,110,245,.2);">
+        <div style="font-size:26px;margin-bottom:12px;">&#x1F4F8;</div>
+        <div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:8px;">3. Generér shootet</div>
+        <ul class="bullets" style="font-size:12.5px;">
+          <li>Vælg baggrund og miljø</li>
+          <li>Sæt lyssætning og stemning</li>
+          <li><strong>Fuld redaktionel kvalitet</strong></li>
+          <li>Download production-ready</li>
+        </ul>
+      </div>
+    </div>
+    <div class="infobox infobox-green" style="display:flex;align-items:center;gap:16px;">
+      <div style="font-size:24px;flex-shrink:0;">&#x2705;</div>
+      <div>
+        <strong style="color:var(--white);">AI-motoren er bevist og fungerer i dag.</strong> &nbsp;&mdash;&nbsp;
+        <span style="color:rgba(255,255,255,.6);">Hele det kreative core &mdash; modeller, tøjfitting, shoot-generering &mdash; kører live. Teknologirisikoen er elimineret.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 4: FLASKEHALSEN — GOOGLE AI STUDIO                      -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-index="3">
+  <div class="max-w">
+    <div class="eyebrow">03 &mdash; Flaskehalsen</div>
+    <h2 class="headline">Google AI Studio er et <span class="accent-red">laboratorium</span> &mdash; ikke et produkt.</h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 28px;">Perfekt til at bevise en idé. Men du kan ikke drive en forretning i et lab.</p>
+    <div class="status-grid">
+      <div class="status-col danger">
+        <h4>&#x2715; Hvad Google AI Studio ikke kan</h4>
+        <div class="status-item"><span class="badge-no">&#x2715;</span>Ingen brugerkonti &mdash; ingen ejer noget</div>
+        <div class="status-item"><span class="badge-no">&#x2715;</span>Ingen sessions &mdash; alt forsvinder efter brug</div>
+        <div class="status-item"><span class="badge-no">&#x2715;</span>Ingen betaling &mdash; nul revenue</div>
+        <div class="status-item"><span class="badge-no">&#x2715;</span>Ingen branding &mdash; Googles interface</div>
+        <div class="status-item"><span class="badge-no">&#x2715;</span>Ingen skalering &mdash; manuelt hvert gang</div>
+        <div class="status-item"><span class="badge-no">&#x2715;</span>Ingen data &mdash; vi ved ikke hvem der bruger det</div>
+      </div>
+      <div class="status-col works">
+        <h4>&#x2713; Hvad der allerede virker</h4>
+        <div class="status-item"><span class="badge-ok">&#x2713;</span>AI-generering af fotoshoot</div>
+        <div class="status-item"><span class="badge-ok">&#x2713;</span>Model-upload og konfiguration</div>
+        <div class="status-item"><span class="badge-ok">&#x2713;</span>Tøjfitting på model</div>
+        <div class="status-item"><span class="badge-ok">&#x2713;</span>Baggrunds- og lysindstillinger</div>
+        <div class="status-item"><span class="badge-ok">&#x2713;</span>Drape og fit scale controls</div>
+        <div class="status-item"><span class="badge-ok">&#x2713;</span>Production-quality output</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 5: VISIONEN — PLATFORM-LAGET                            -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-index="4">
+  <div class="max-w">
+    <div class="eyebrow">04 &mdash; Visionen</div>
+    <h2 class="headline">Ét lag <span class="accent">platform</span> &mdash; og vi er et rigtigt produkt.</h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 24px;">Vi wrapper en SaaS-forretning rundt om AI-motoren. Præcis som Runway, Midjourney og Adobe Firefly har gjort med deres AI.</p>
+    <div class="cols-2" style="margin-bottom:18px;">
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:14px;">I dag &mdash; Google AI Studio</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="background:rgba(225,112,85,.06);border:1px solid rgba(225,112,85,.15);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.6);">Manuel session hver gang</div>
+          <div style="background:rgba(225,112,85,.06);border:1px solid rgba(225,112,85,.15);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.6);">Kun intern adgang &mdash; ingen kunder</div>
+          <div style="background:rgba(225,112,85,.06);border:1px solid rgba(225,112,85,.15);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.6);">Googles UI &mdash; ikke vores brand</div>
+          <div style="background:rgba(225,112,85,.06);border:1px solid rgba(225,112,85,.15);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.6);">Nul omsætning</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:14px;">Target &mdash; Hummel Creative Studio</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="background:rgba(0,184,148,.06);border:1px solid rgba(0,184,148,.18);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.75);"><strong style="color:var(--white);">Brugerkonti</strong> &mdash; alle kunder har eget login</div>
+          <div style="background:rgba(0,184,148,.06);border:1px solid rgba(0,184,148,.18);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.75);"><strong style="color:var(--white);">Betaling</strong> &mdash; credits og abonnementer via Stripe</div>
+          <div style="background:rgba(0,184,148,.06);border:1px solid rgba(0,184,148,.18);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.75);"><strong style="color:var(--white);">Vores brand</strong> &mdash; Hummel UI, vores flow</div>
+          <div style="background:rgba(0,184,148,.06);border:1px solid rgba(0,184,148,.18);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.75);"><strong style="color:var(--white);">Data &amp; analytics</strong> &mdash; fuld indsigt i kundebrug</div>
+        </div>
+      </div>
+    </div>
+    <div class="infobox infobox-purple" style="display:flex;align-items:center;gap:14px;">
+      <span style="font-size:20px;flex-shrink:0;">&#x1F4A1;</span>
+      <span style="color:rgba(255,255,255,.7);font-size:13.5px;"><strong style="color:var(--white);">Nøgleindsigt:</strong> Vi opfinder ikke AI&rsquo;en. Vi bygger forretningen rundt om den &mdash; præcis som de store spillere har gjort.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 6: TEKNOLOGI — STACK-OVERBLIK                           -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-index="5">
+  <div class="max-w">
+    <div class="eyebrow">05 &mdash; Teknologi</div>
+    <h2 class="headline">Gennemprøvet stack. <span class="accent-green">AI-laget er allerede live.</span></h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 22px;">Alle teknologier er battle-tested og brugt af tusindvis af SaaS-virksomheder. Intet eksperimentelt.</p>
+    <div class="arch-stack">
+      <div class="arch-layer highlight" style="border-left:3px solid var(--green);">
+        <div class="arch-icon">&#x1F916;</div>
+        <div class="arch-name" style="color:var(--green);">AI Engine</div>
+        <div class="arch-tech" style="color:var(--teal);">Google AI &rarr; Claude API</div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:12px;color:var(--green);font-weight:600;">Bevist. Fungerer. Klar til produktion.</span>
+          <span class="arch-badge live">&#x2713; Live</span>
+        </div>
+      </div>
+      <div class="arch-layer l1">
+        <div class="arch-icon">&#x1F5A5;</div>
+        <div class="arch-name">Frontend</div>
+        <div class="arch-tech">Next.js + Tailwind</div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:12px;color:var(--muted);">Vores brand, vores brugeroplevelse</span>
+          <span class="arch-badge build">Bygges</span>
+        </div>
+      </div>
+      <div class="arch-layer l2">
+        <div class="arch-icon">&#x1F510;</div>
+        <div class="arch-name">Auth &amp; Brugerkonti</div>
+        <div class="arch-tech">Supabase Auth</div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:12px;color:var(--muted);">Login, signup, roller, sessions</span>
+          <span class="arch-badge build">Bygges</span>
+        </div>
+      </div>
+      <div class="arch-layer l3">
+        <div class="arch-icon">&#x1F4B3;</div>
+        <div class="arch-name">Betaling</div>
+        <div class="arch-tech">Stripe</div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:12px;color:var(--muted);">Credits, abonnementer, fakturering</span>
+          <span class="arch-badge build">Bygges</span>
+        </div>
+      </div>
+      <div class="arch-layer l4">
+        <div class="arch-icon">&#x1F5C4;</div>
+        <div class="arch-name">Database &amp; Storage</div>
+        <div class="arch-tech">Supabase (Postgres + S3)</div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:12px;color:var(--muted);">Projekter, modeller, shoots, historik</span>
+          <span class="arch-badge build">Bygges</span>
+        </div>
+      </div>
+      <div class="arch-layer l5">
+        <div class="arch-icon">&#x2601;&#xFE0F;</div>
+        <div class="arch-name">Hosting</div>
+        <div class="arch-tech">Vercel</div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:12px;color:var(--muted);">Auto-scaling, global CDN, zero-config</span>
+          <span class="arch-badge build">Bygges</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:12px;">
+      <div style="flex:1;background:rgba(0,184,148,.06);border:1px solid rgba(0,184,148,.18);border-radius:10px;padding:12px 16px;text-align:center;">
+        <div style="font-size:11px;color:var(--green);font-weight:700;letter-spacing:.1em;text-transform:uppercase;">Klar i dag</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:4px;">AI-motoren (det svære)</div>
+      </div>
+      <div style="flex:1;background:rgba(108,92,231,.06);border:1px solid rgba(108,92,231,.18);border-radius:10px;padding:12px 16px;text-align:center;">
+        <div style="font-size:11px;color:var(--purple-l);font-weight:700;letter-spacing:.1em;text-transform:uppercase;">Skal bygges</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:4px;">Standard SaaS-lag (det kendte)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 7: BRUGERREJSEN                                          -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-index="6">
+  <div class="max-w" style="text-align:center;">
+    <div class="eyebrow">06 &mdash; Brugerrejsen</div>
+    <h2 class="headline">Fra landing page til <span class="accent">færdigt shoot på 5 min.</span></h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px auto 36px;max-width:580px;">Første shoot skal være muligt inden for 5 minutter efter sign-up. Ingen friktion.</p>
+    <div class="flow" style="gap:0;margin-bottom:32px;">
+      <div class="flow-step">
+        <div class="flow-num">01</div>
+        <div class="flow-icon">&#x1F3E0;</div>
+        <div class="flow-label">Landing</div>
+        <div class="flow-sub">Se et shoot live</div>
+      </div>
+      <div class="flow-arrow">&#x203A;</div>
+      <div class="flow-step">
+        <div class="flow-num">02</div>
+        <div class="flow-icon">&#x270D;&#xFE0F;</div>
+        <div class="flow-label">Sign Up</div>
+        <div class="flow-sub">Email + kodeord</div>
+      </div>
+      <div class="flow-arrow">&#x203A;</div>
+      <div class="flow-step" style="border-color:rgba(108,92,231,.35);">
+        <div class="flow-num">03</div>
+        <div class="flow-icon">&#x1F4E4;</div>
+        <div class="flow-label">Upload Model</div>
+        <div class="flow-sub">Front + back portrait</div>
+      </div>
+      <div class="flow-arrow">&#x203A;</div>
+      <div class="flow-step" style="border-color:rgba(108,92,231,.35);">
+        <div class="flow-num">04</div>
+        <div class="flow-icon">&#x1F455;</div>
+        <div class="flow-label">Upload Tøj</div>
+        <div class="flow-sub">Stykke for stykke</div>
+      </div>
+      <div class="flow-arrow">&#x203A;</div>
+      <div class="flow-step" style="border-color:rgba(76,110,245,.4);">
+        <div class="flow-num">05</div>
+        <div class="flow-icon">&#x1F39B;&#xFE0F;</div>
+        <div class="flow-label">Sæt Scenen</div>
+        <div class="flow-sub">Lys, baggrund, look</div>
+      </div>
+      <div class="flow-arrow">&#x203A;</div>
+      <div class="flow-step" style="border-color:rgba(0,184,148,.4);">
+        <div class="flow-num">06</div>
+        <div class="flow-icon">&#x2B07;&#xFE0F;</div>
+        <div class="flow-label">Download</div>
+        <div class="flow-sub">Production-ready</div>
+      </div>
+    </div>
+    <div style="display:inline-flex;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <div style="padding:18px 28px;background:rgba(255,255,255,.03);border-right:1px solid var(--border);">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Traditionelt shoot</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;color:var(--red);line-height:1;">2&ndash;4 uger</div>
+      </div>
+      <div style="padding:18px 28px;background:rgba(255,255,255,.03);border-right:1px solid var(--border);">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Hummel Studio</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;color:var(--green);line-height:1;">&lt; 5 minutter</div>
+      </div>
+      <div style="padding:18px 28px;background:rgba(255,255,255,.03);">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Besparelse</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;color:var(--amber);line-height:1;">80&ndash;95%</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 8: FORRETNINGSMODEL                                      -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-index="7">
+  <div class="max-w">
+    <div class="eyebrow">07 &mdash; Forretningsmodel</div>
+    <h2 class="headline">Credits + abonnement. <span class="accent">Høj margin.</span></h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 24px;">Samme model som Midjourney og Runway &mdash; lav variabel cost, høj gross margin, forudsigelig MRR.</p>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;">
+      <div class="tier">
+        <div class="tier-name">Free</div>
+        <div class="tier-price"><sup>kr</sup>0</div>
+        <div class="tier-credits">10 credits / md</div>
+        <ul><li>Prøv gratis, ingen kort</li><li>Watermark på exports</li><li>1 model</li></ul>
+      </div>
+      <div class="tier">
+        <div class="tier-name">Starter</div>
+        <div class="tier-price"><sup>kr</sup>299</div>
+        <div class="tier-credits">100 credits / md</div>
+        <ul><li>Clean exports</li><li>3 modeller</li><li>Shoot-historik</li></ul>
+      </div>
+      <div class="tier featured">
+        <div class="tier-name" style="color:var(--purple-l);">Pro</div>
+        <div class="tier-price"><sup>kr</sup>799</div>
+        <div class="tier-credits">400 credits / md</div>
+        <ul><li>Credits rulles over</li><li>10 modeller</li><li>Prioritetsgenerering</li></ul>
+      </div>
+      <div class="tier">
+        <div class="tier-name">Agency</div>
+        <div class="tier-price" style="font-size:1.3rem;">Custom</div>
+        <div class="tier-credits">Unlimited</div>
+        <ul><li>Team workspace</li><li>API-adgang</li><li>White-label</li></ul>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+      <div class="card" style="text-align:center;">
+        <div class="big-stat">
+          <div class="num" style="background:linear-gradient(135deg,var(--purple-l),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:2.2rem;">1 credit</div>
+          <div class="lbl">= 1 AI-generering</div>
+        </div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="big-stat">
+          <div class="num" style="color:var(--green);font-size:2.2rem;">70&ndash;80%</div>
+          <div class="lbl">Gross margin</div>
+        </div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="big-stat">
+          <div class="num" style="color:var(--amber);font-size:2.2rem;">~2M kr</div>
+          <div class="lbl">ARR ved 500 Pro-kunder</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 9: ROADMAP — ÉN SAMLET SLIDE                            -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-index="8">
+  <div class="max-w">
+    <div class="eyebrow">08 &mdash; Roadmap</div>
+    <h2 class="headline">3 sprints. <span class="accent-green">Revenue fra sprint 2.</span></h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 24px;">Struktureret til at generere omsætning hurtigst muligt &mdash; ikke et perfekt produkt fra dag 1.</p>
+
+    <!-- Sprint 1 -->
+    <div style="display:grid;grid-template-columns:140px 1fr;gap:16px;margin-bottom:12px;">
+      <div style="padding:14px 16px;background:rgba(108,92,231,.08);border:1px solid rgba(108,92,231,.25);border-radius:10px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--purple-l);">Sprint 1</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:var(--white);margin-top:4px;">Uge 1&ndash;5</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">Foundation</div>
+      </div>
+      <div class="card" style="display:flex;align-items:center;gap:20px;padding:14px 20px;">
+        <ul class="bullets" style="font-size:12.5px;gap:6px;flex:1;">
+          <li>Bruger signup + login (Supabase Auth)</li>
+          <li>Studio UI &mdash; vores eget shoot-flow</li>
+          <li>AI API backend-integration</li>
+        </ul>
+        <ul class="bullets" style="font-size:12.5px;gap:6px;flex:1;">
+          <li>Model + shoot storage</li>
+          <li>Shoot-galleri med historik</li>
+          <li>Production deploy (Vercel)</li>
+        </ul>
+        <div style="min-width:150px;padding:8px 14px;background:rgba(108,92,231,.1);border:1px solid rgba(108,92,231,.25);border-radius:8px;font-size:11.5px;color:var(--purple-l);text-align:center;">
+          <strong style="color:var(--white);display:block;margin-bottom:2px;">Milepæl</strong>
+          Første bruger laver et shoot
+        </div>
+      </div>
+    </div>
+
+    <!-- Sprint 2 -->
+    <div style="display:grid;grid-template-columns:140px 1fr;gap:16px;margin-bottom:12px;">
+      <div style="padding:14px 16px;background:rgba(0,184,148,.08);border:1px solid rgba(0,184,148,.25);border-radius:10px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green);">Sprint 2</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:var(--white);margin-top:4px;">Uge 6&ndash;10</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">Revenue</div>
+      </div>
+      <div class="card" style="display:flex;align-items:center;gap:20px;padding:14px 20px;">
+        <ul class="bullets" style="font-size:12.5px;gap:6px;flex:1;">
+          <li>Stripe &mdash; abonnementer + credits</li>
+          <li>Checkout + betalingsflow</li>
+          <li>Bruger-dashboard med balance</li>
+        </ul>
+        <ul class="bullets" style="font-size:12.5px;gap:6px;flex:1;">
+          <li>Usage metering per generering</li>
+          <li>Admin panel &mdash; kunder og forbrug</li>
+          <li>Email-notifikationer</li>
+        </ul>
+        <div style="min-width:150px;padding:8px 14px;background:rgba(0,184,148,.1);border:1px solid rgba(0,184,148,.25);border-radius:8px;font-size:11.5px;color:var(--green);text-align:center;">
+          <strong style="color:var(--white);display:block;margin-bottom:2px;">Milepæl</strong>
+          Produktet tjener penge
+        </div>
+      </div>
+    </div>
+
+    <!-- Sprint 3 -->
+    <div style="display:grid;grid-template-columns:140px 1fr;gap:16px;">
+      <div style="padding:14px 16px;background:rgba(253,203,110,.06);border:1px solid rgba(253,203,110,.25);border-radius:10px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);">Sprint 3</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:var(--white);margin-top:4px;">Uge 11&ndash;16</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">Scale</div>
+      </div>
+      <div class="card" style="display:flex;align-items:center;gap:20px;padding:14px 20px;">
+        <ul class="bullets" style="font-size:12.5px;gap:6px;flex:1;">
+          <li>Team workspaces</li>
+          <li>Brand kit management</li>
+          <li>Batch generation</li>
+        </ul>
+        <ul class="bullets" style="font-size:12.5px;gap:6px;flex:1;">
+          <li>Prompt-historik og genbrug</li>
+          <li>API-adgang til agencies</li>
+          <li>White-label mulighed</li>
+        </ul>
+        <div style="min-width:150px;padding:8px 14px;background:rgba(253,203,110,.08);border:1px solid rgba(253,203,110,.25);border-radius:8px;font-size:11.5px;color:var(--amber);text-align:center;">
+          <strong style="color:var(--white);display:block;margin-bottom:2px;">Milepæl</strong>
+          Skalerbar B2B + agencies
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 10: INVESTERING                                          -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-index="9">
+  <div class="max-w">
+    <div class="eyebrow">09 &mdash; Investering</div>
+    <h2 class="headline">Fra MVP til marked: <span class="accent">~530 timer.</span></h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 24px;">
+      10 uger med et lille dedikeret team. AI-assisteret udvikling (Claude Code) sparer 30&ndash;40% udviklertid.
+    </p>
+    <div class="cols-3" style="margin-bottom:20px;">
+      <div class="card" style="text-align:center;border-top:3px solid var(--purple);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--purple-l);margin-bottom:10px;">Udvikling</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:2.4rem;font-weight:700;color:var(--purple-l);line-height:1;">330h</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;">Frontend, backend, integrationer</div>
+      </div>
+      <div class="card" style="text-align:center;border-top:3px solid var(--teal);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:10px;">AI Engineering</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:2.4rem;font-weight:700;color:var(--teal);line-height:1;">100h</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;">Prompt-migrering, tuning, validering</div>
+      </div>
+      <div class="card" style="text-align:center;border-top:3px solid var(--amber);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:10px;">PM + Design</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:2.4rem;font-weight:700;color:var(--amber);line-height:1;">100h</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;">UX, branding, projektledelse</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px;">
+      <div style="background:rgba(225,112,85,.06);border:1px solid rgba(225,112,85,.18);border-radius:10px;padding:14px 16px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Uden AI-assistent</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;color:rgba(255,255,255,.35);text-decoration:line-through;">~820h</div>
+      </div>
+      <div style="background:rgba(0,184,148,.08);border:1px solid rgba(0,184,148,.3);border-radius:10px;padding:14px 16px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:6px;">Med Claude Code</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;color:var(--green);">~530h</div>
+      </div>
+      <div style="background:rgba(253,203,110,.06);border:1px solid rgba(253,203,110,.3);border-radius:10px;padding:14px 16px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:6px;">Med buffer (+30%)</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;color:var(--amber);">~700h</div>
+      </div>
+    </div>
+    <div class="infobox infobox-green" style="display:flex;align-items:center;gap:14px;">
+      <span style="font-size:18px;flex-shrink:0;">&#x26A1;</span>
+      <span style="color:rgba(255,255,255,.7);font-size:13.5px;">
+        <strong style="color:var(--white);">AI-assisteret udvikling:</strong> Claude Code fungerer som co-developer i VS Code &mdash; læser hele projektet, skriver kode, tester og deployer. Det er derfor vi sparer 30&ndash;40% tid uden at skære hjørner.
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 11: RISIKO & MOAT                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-index="10">
+  <div class="max-w">
+    <div class="eyebrow">10 &mdash; Risiko &amp; Konkurrencefordel</div>
+    <h2 class="headline">Hvad kan gå galt &mdash; og hvorfor vi <span class="accent-green">vinder.</span></h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 24px;">Ærlig risikovurdering og de fordele der gør os svære at kopiere.</p>
+    <div class="cols-2" style="margin-bottom:18px;">
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:14px;">&#x26A0;&#xFE0F; Risici</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="risk-item">
+            <div class="risk-icon">&#x1F4B0;</div>
+            <div>
+              <div class="risk-label">AI-omkostninger stiger</div>
+              <div class="risk-text">API-priser kan ændre sig hvis forbrug vokser hurtigt.</div>
+              <div class="risk-mitigate">&#x2192; Mitigering: Credit-model prissætter per generering. Margin er indbygget.</div>
+            </div>
+          </div>
+          <div class="risk-item">
+            <div class="risk-icon">&#x1F3AF;</div>
+            <div>
+              <div class="risk-label">Konkurrenter bygger lignende</div>
+              <div class="risk-text">Andre kan også wrappe AI-APIs i en SaaS.</div>
+              <div class="risk-mitigate">&#x2192; Mitigering: First-mover i fashion-nichen. Domænespecifik prompting er vores moat.</div>
+            </div>
+          </div>
+          <div class="risk-item">
+            <div class="risk-icon">&#x1F50D;</div>
+            <div>
+              <div class="risk-label">Kvalitet varierer</div>
+              <div class="risk-text">AI-output er ikke 100% konsistent hver gang.</div>
+              <div class="risk-mitigate">&#x2192; Mitigering: Re-generation er billigt. Kvalitetskontrol i workflow.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:14px;">&#x1F6E1;&#xFE0F; Konkurrencefordele (moat)</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="risk-item" style="border-color:rgba(0,184,148,.2);">
+            <div class="risk-icon">&#x1F9E0;</div>
+            <div>
+              <div class="risk-label">Domæne-ekspertise</div>
+              <div class="risk-text">Vi forstår fashion-shoots, ikke bare AI. Prompts er finjusteret til tøjfitting, drape, lyssætning og brand-korrekthed.</div>
+            </div>
+          </div>
+          <div class="risk-item" style="border-color:rgba(0,184,148,.2);">
+            <div class="risk-icon">&#x1F680;</div>
+            <div>
+              <div class="risk-label">Bevist teknologi</div>
+              <div class="risk-text">Vi har allerede et fungerende MVP. Konkurrenter starter fra nul. Vi starter fra et produkt der virker.</div>
+            </div>
+          </div>
+          <div class="risk-item" style="border-color:rgba(0,184,148,.2);">
+            <div class="risk-icon">&#x1F517;</div>
+            <div>
+              <div class="risk-label">Lock-in via data</div>
+              <div class="risk-text">Modeller, shoots, brand kits &mdash; jo mere kunden bruger platformen, jo sværere er det at skifte.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 12: CLOSING / CTA                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-index="11">
+  <div style="text-align:center;position:relative;z-index:1;max-width:800px;">
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);width:700px;height:300px;background:radial-gradient(ellipse,rgba(0,184,148,.1) 0%,transparent 70%);pointer-events:none;"></div>
+    <div class="pill"><span class="dot-live"></span>Beslutning</div>
+    <h1 class="display" style="text-align:center;font-size:clamp(2.4rem,5vw,5rem);margin-bottom:24px;">
+      AI&rsquo;en virker.<br/>
+      <span style="color:var(--green);">Nu bygger vi</span><br/>
+      forretningen.
+    </h1>
+    <div style="width:60px;height:2px;background:linear-gradient(90deg,var(--green),var(--teal));margin:0 auto 28px;"></div>
+    <p style="font-size:16px;color:rgba(255,255,255,.55);line-height:1.8;max-width:580px;margin:0 auto 36px;">
+      Vi har det ingen andre har: <span style="color:rgba(255,255,255,.85);">en fungerende AI shoot-motor.</span><br/>
+      Det eneste der mangler er platformen rundt om den.<br/>
+    </p>
+    <div style="display:inline-flex;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:32px;">
+      <div style="padding:18px 28px;background:rgba(255,255,255,.03);border-right:1px solid var(--border);">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Investering</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:var(--white);">~700 timer</div>
+      </div>
+      <div style="padding:18px 28px;background:rgba(255,255,255,.03);border-right:1px solid var(--border);">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Revenue fra</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:var(--green);">Uge 6</div>
+      </div>
+      <div style="padding:18px 28px;background:rgba(255,255,255,.03);">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Teknologirisiko</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:var(--purple-l);">Elimineret</div>
+      </div>
+    </div>
+    <div style="display:block;">
+      <div class="infobox infobox-green" style="display:inline-flex;align-items:center;gap:12px;padding:14px 28px;">
+        <span style="font-size:18px;">&#x1F449;</span>
+        <span style="font-size:15px;font-weight:600;color:var(--white);">Næste skridt: Godkend sprint 1 &mdash; vi kan starte i næste uge.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- Navigation -->
+<div class="nav">
+  <button onclick="prev()">&#x2039;</button>
+  <div class="nav-dots" id="dots"></div>
+  <button onclick="next()">&#x203A;</button>
+  <div class="slide-counter" id="counter">1 / 12</div>
+</div>
+
+<div style="position:fixed;top:20px;right:24px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.13);z-index:100;">Piletaster for navigation</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total  = slides.length;
+  let current  = 0;
+
+  const dotsEl = document.getElementById('dots');
+  for (let i = 0; i < total; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goto(i);
+    dotsEl.appendChild(d);
+  }
+
+  function goto(n) {
+    if (n === current || n < 0 || n >= total) return;
+    const prev_idx = current;
+    slides[prev_idx].classList.remove('active');
+    slides[prev_idx].classList.add('exit-l');
+    current = n;
+    slides[current].classList.add('active');
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+    document.getElementById('counter').textContent = (current + 1) + ' / ' + total;
+    setTimeout(() => slides[prev_idx].classList.remove('exit-l'), 450);
+  }
+
+  function next() { goto(current + 1); }
+  function prev() { goto(current - 1); }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowLeft')                   { e.preventDefault(); prev(); }
+  });
+</script>
+</body>
+</html>
