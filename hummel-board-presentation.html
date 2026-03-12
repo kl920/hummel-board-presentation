@@ -1,0 +1,938 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HUMMEL CREATIVE STUDIO — From MVP to Platform</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg:       #08080f;
+    --surface:  #0f0f1a;
+    --card:     #13131f;
+    --border:   rgba(255,255,255,0.07);
+    --purple:   #6c5ce7;
+    --purple-l: #a29bfe;
+    --blue:     #4c6ef5;
+    --teal:     #00cec9;
+    --green:    #00b894;
+    --amber:    #fdcb6e;
+    --red:      #e17055;
+    --white:    #ffffff;
+    --text:     rgba(255,255,255,0.88);
+    --muted:    rgba(255,255,255,0.38);
+    --label:    rgba(255,255,255,0.18);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    user-select: none;
+  }
+
+  .deck { position: relative; width: 100vw; height: 100vh; }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 52px 80px;
+    opacity: 0;
+    transform: translateX(60px);
+    transition: opacity .42s cubic-bezier(.4,0,.2,1), transform .42s cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+  }
+  .slide.active  { opacity: 1; transform: translateX(0); pointer-events: all; }
+  .slide.exit-l  { opacity: 0; transform: translateX(-60px); transition: opacity .3s, transform .3s; }
+
+  .slide::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.013) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.013) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+  }
+
+  /* Nav */
+  .nav {
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 12px; z-index: 100;
+    background: rgba(255,255,255,.04); border: 1px solid var(--border);
+    border-radius: 100px; padding: 9px 20px; backdrop-filter: blur(12px);
+  }
+  .nav button { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 4px 10px; border-radius: 6px; transition: color .2s, background .2s; line-height: 1; }
+  .nav button:hover { color: var(--white); background: rgba(255,255,255,.08); }
+  .nav-dots { display: flex; gap: 6px; align-items: center; }
+  .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--label); cursor: pointer; transition: all .25s; }
+  .dot.active { width: 20px; border-radius: 3px; background: var(--purple-l); }
+  .slide-counter { font-size: 11px; letter-spacing: .1em; color: var(--muted); min-width: 36px; text-align: center; }
+
+  /* Type */
+  .eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--purple-l); margin-bottom: 14px; }
+  h1.display { font-family: 'Space Grotesk', sans-serif; font-size: clamp(3rem,6vw,6.5rem); font-weight: 700; letter-spacing: -.04em; line-height: .95; color: var(--white); }
+  h2.headline { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.9rem,3.6vw,3.4rem); font-weight: 700; letter-spacing: -.03em; line-height: 1.05; color: var(--white); margin-bottom: 8px; }
+  .accent       { color: var(--purple-l); }
+  .accent-green { color: var(--green); }
+  .accent-amber { color: var(--amber); }
+  .accent-teal  { color: var(--teal); }
+  .accent-red   { color: var(--red); }
+  .glow-purple  { text-shadow: 0 0 40px rgba(108,92,231,.5); color: var(--purple-l); }
+
+  /* Layout */
+  .max-w  { max-width: 1020px; width: 100%; }
+  .cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; width: 100%; }
+  .cols-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; width: 100%; }
+  .w-full { width: 100%; }
+
+  /* Card */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px; }
+
+  /* Pill */
+  .pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(108,92,231,.12); border: 1px solid rgba(108,92,231,.25); border-radius: 100px; padding: 5px 14px; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--purple-l); margin-bottom: 24px; }
+  .dot-live { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 1.6s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* Bullets */
+  ul.bullets { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  ul.bullets li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: rgba(255,255,255,.68); line-height: 1.5; }
+  ul.bullets li::before { content:''; flex-shrink:0; width:5px; height:5px; margin-top:8px; border-radius:50%; background:var(--purple-l); }
+  ul.bullets li strong { color: var(--white); font-weight: 600; }
+
+  /* Status */
+  .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
+  .status-col { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; }
+  .status-col h4 { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 14px; }
+  .status-col.works h4  { color: var(--green); }
+  .status-col.danger h4 { color: var(--red); }
+  .status-item { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: rgba(255,255,255,.7); padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+  .status-item:last-child { border-bottom: none; }
+  .badge-ok { color: var(--green); font-size: 14px; flex-shrink: 0; }
+  .badge-no { color: var(--red);   font-size: 14px; flex-shrink: 0; }
+
+  /* Architecture */
+  .arch-stack { display: flex; flex-direction: column; gap: 7px; width: 100%; }
+  .arch-layer { display: flex; align-items: center; gap: 16px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 18px; position: relative; overflow: hidden; }
+  .arch-layer::before { content:''; position:absolute; left:0;top:0;bottom:0; width:3px; }
+  .arch-layer.l1::before { background: var(--green); }
+  .arch-layer.l2::before { background: var(--purple); }
+  .arch-layer.l3::before { background: var(--blue); }
+  .arch-layer.l4::before { background: var(--teal); }
+  .arch-layer.l5::before { background: var(--amber); }
+  .arch-layer.l6::before { background: var(--red); }
+  .arch-layer.highlight { border-color: rgba(0,184,148,.35); background: rgba(0,184,148,.05); }
+  .arch-icon { font-size: 17px; width: 28px; text-align: center; flex-shrink:0; }
+  .arch-name { font-weight: 600; font-size: 13px; color: var(--white); min-width: 150px; }
+  .arch-tech { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--purple-l); }
+  .arch-badge { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 3px 10px; border-radius: 100px; }
+  .arch-badge.live  { background: rgba(0,184,148,.12); color: var(--green);    border: 1px solid rgba(0,184,148,.25); }
+  .arch-badge.build { background: rgba(108,92,231,.12); color: var(--purple-l); border: 1px solid rgba(108,92,231,.25); }
+
+  /* Roadmap */
+  .roadmap { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; width: 100%; }
+  .rm-phase { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 22px 22px; position: relative; overflow: hidden; }
+  .rm-phase::after { content:''; position:absolute; top:0;left:0;right:0; height:3px; }
+  .rm-phase.p1::after { background: linear-gradient(90deg, var(--purple), var(--blue)); }
+  .rm-phase.p2::after { background: linear-gradient(90deg, var(--teal), var(--green)); }
+  .rm-phase.p3::after { background: linear-gradient(90deg, var(--amber), var(--red)); }
+  .rm-sprint { font-size: 10px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .rm-title  { font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 14px; }
+
+  /* Pricing */
+  .tier { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .tier.featured { border-color: rgba(108,92,231,.5); background: rgba(108,92,231,.07); }
+  .tier-name  { font-size: 10px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); }
+  .tier-price { font-family: 'Space Grotesk',sans-serif; font-size: 1.8rem; font-weight: 700; color: var(--white); line-height: 1; }
+  .tier-price sup { font-size: .8rem; vertical-align: super; color: var(--muted); font-weight: 400; margin-right: 2px; }
+  .tier-credits { font-size: 11px; color: var(--purple-l); font-weight: 600; }
+  .tier ul { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-top: 6px; font-size: 12px; color: var(--muted); }
+  .tier ul li::before { content: '-> '; color: var(--purple-l); }
+
+  /* Flow */
+  .flow { display: flex; align-items: center; width: 100%; }
+  .flow-step { flex:1; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 12px; text-align:center; }
+  .flow-num   { font-size:10px; font-weight:700; letter-spacing:.12em; color:var(--purple-l); margin-bottom:6px; }
+  .flow-icon  { font-size:20px; margin-bottom:6px; }
+  .flow-label { font-size:11.5px; font-weight:600; color:var(--white); }
+  .flow-sub   { font-size:10px; color:var(--muted); margin-top:3px; }
+  .flow-arrow { color:var(--label); font-size:16px; flex-shrink:0; padding:0 4px; }
+
+  /* Info boxes */
+  .infobox { padding: 14px 20px; border-radius: 10px; font-size: 13.5px; line-height: 1.6; }
+  .infobox-green  { background: rgba(0,184,148,.06); border: 1px solid rgba(0,184,148,.18); }
+  .infobox-purple { background: rgba(108,92,231,.07); border: 1px solid rgba(108,92,231,.2); }
+
+  /* Big stat */
+  .big-stat .num { font-family:'Space Grotesk',sans-serif; font-size:clamp(2.4rem,4.5vw,4rem); font-weight:700; letter-spacing:-.04em; color:var(--white); line-height:1; }
+  .big-stat .lbl { font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-top:6px; }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+<!-- SLIDE 1: COVER -->
+<div class="slide active" data-index="0">
+  <div style="text-align:center;position:relative;z-index:1;max-width:860px;">
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);width:700px;height:320px;background:radial-gradient(ellipse,rgba(108,92,231,.12) 0%,transparent 68%);pointer-events:none;"></div>
+    <div class="pill"><span class="dot-live"></span>Board Presentation &mdash; March 2026</div>
+    <h1 class="display" style="text-align:center;margin-bottom:28px;">
+      AI Photo<br/>
+      <span class="glow-purple">Studio</span>
+    </h1>
+    <p style="font-size:clamp(1rem,1.8vw,1.35rem);color:var(--muted);line-height:1.7;max-width:600px;margin:0 auto 32px;">
+      The MVP works.<br/>
+      <span style="color:rgba(255,255,255,.65);">Nu tager vi det ud af Google AI &mdash; og bygger et rigtigt produkt.</span>
+    </p>
+    <div style="width:60px;height:2px;background:linear-gradient(90deg,var(--purple),var(--teal));margin:0 auto 28px;"></div>
+    <p style="font-size:11px;color:var(--label);letter-spacing:.12em;text-transform:uppercase;">HUMMEL CREATIVE STUDIO</p>
+  </div>
+</div>
+
+<!-- SLIDE 2: WHAT WE HAVE -->
+<div class="slide" data-index="1">
+  <div class="max-w">
+    <div class="eyebrow">Slide 02 &mdash; The Product</div>
+    <h2 class="headline">Vi har bygget et AI photo studio &mdash; og det <span class="accent-green">virker.</span></h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 28px;">En bruger kan lave et komplet, professionelt fotoshoot på minutter &mdash; helt uden fotograf, model eller studie.</p>
+    <div class="cols-3" style="margin-bottom:18px;">
+      <div class="card" style="border-color:rgba(0,184,148,.2);">
+        <div style="font-size:26px;margin-bottom:12px;">&#x1F9CD;</div>
+        <div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:8px;">1. Lav din model</div>
+        <ul class="bullets" style="font-size:12.5px;">
+          <li>Mand, kvinde, alder, look</li>
+          <li><strong>Front + back portrait</strong> upload</li>
+          <li>Ansigtsretning og udtryk</li>
+          <li>Fit scale og drape-indstillinger</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:rgba(108,92,231,.2);">
+        <div style="font-size:26px;margin-bottom:12px;">&#x1F455;</div>
+        <div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:8px;">2. Upload tøjet</div>
+        <ul class="bullets" style="font-size:12.5px;">
+          <li>Hvert plagg uploades separat</li>
+          <li>AI fitter tøjet til modellen</li>
+          <li><strong>Brand-korrekt visning</strong></li>
+          <li>Drape og fold simulation</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:rgba(76,110,245,.2);">
+        <div style="font-size:26px;margin-bottom:12px;">&#x1F4F8;</div>
+        <div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:8px;">3. Generer shootet</div>
+        <ul class="bullets" style="font-size:12.5px;">
+          <li>Vælg baggrund og miljø</li>
+          <li>Sæt lysætning og stemning</li>
+          <li><strong>Fuld redaktionel kvalitet</strong></li>
+          <li>Download production-ready</li>
+        </ul>
+      </div>
+    </div>
+    <div class="infobox infobox-green" style="display:flex;align-items:center;gap:16px;">
+      <div style="font-size:24px;flex-shrink:0;">&#x2705;</div>
+      <div>
+        <strong style="color:var(--white);">AI-motoren er bevist og fungerer i dag</strong> &nbsp;&mdash;&nbsp;
+        <span style="color:rgba(255,255,255,.6);">Hele det kreative core: modeller, Tøjfitting, shoot-generering &mdash; alt kører live i Google AI Studio. Teknologirisikoen er elimineret.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: THE GOOGLE AI PROBLEM -->
+<div class="slide" data-index="2">
+  <div class="max-w">
+    <div class="eyebrow">Slide 03 &mdash; The Bottleneck</div>
+    <h2 class="headline">Google AI Studio er et <span class="accent-red">laboratorium</span> &mdash; ikke et produkt.</h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 28px;">Det er præcis det rigtige sted at bevise en ide. Men det er det forkerte sted at drive en forretning.</p>
+    <div class="status-grid">
+      <div class="status-col danger">
+        <h4>X &mdash; Hvad Google AI Studio IKKE kan</h4>
+        <div class="status-item"><span class="badge-no">&#x2715;</span>Ingen brugerkonti &mdash; ingen der ejer noget</div>
+        <div class="status-item"><span class="badge-no">&#x2715;</span>Ingen sessions &mdash; alt forsvinder efter brug</div>
+        <div class="status-item"><span class="badge-no">&#x2715;</span>Ingen betaling &mdash; nul revenue-mulighed</div>
+        <div class="status-item"><span class="badge-no">&#x2715;</span>Ingen branding &mdash; det er Googles interface</div>
+        <div class="status-item"><span class="badge-no">&#x2715;</span>Ingen skalering &mdash; manuelt for hvert shoot</div>
+        <div class="status-item"><span class="badge-no">&#x2715;</span>Ingen data &mdash; vi ved ikke hvem der bruger det</div>
+        <div class="status-item"><span class="badge-no">&#x2715;</span>Kan ikke deles med kunder som produkt</div>
+      </div>
+      <div class="status-col works">
+        <h4>&#x2713; Hvad der allerede virker</h4>
+        <div class="status-item"><span class="badge-ok">&#x2713;</span>AI-generering af fotoshoot</div>
+        <div class="status-item"><span class="badge-ok">&#x2713;</span>Model-upload og konfiguration</div>
+        <div class="status-item"><span class="badge-ok">&#x2713;</span>Tøjfitting på model</div>
+        <div class="status-item"><span class="badge-ok">&#x2713;</span>Baggrunds- og lysindstillinger</div>
+        <div class="status-item"><span class="badge-ok">&#x2713;</span>Drape og fit scale controls</div>
+        <div class="status-item"><span class="badge-ok">&#x2713;</span>Production-quality output</div>
+        <div class="status-item"><span class="badge-ok">&#x2713;</span>Hele det kreative flow</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: WHAT WE NEED TO BUILD -->
+<div class="slide" data-index="3">
+  <div class="max-w">
+    <div class="eyebrow">Slide 04 &mdash; The Bridge</div>
+    <h2 class="headline">Et lag <span class="accent">platform</span> &mdash; og vi er et rigtigt produkt.</h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 24px;">Vi bringer Google AI API'en ud og wrapper en fuld SaaS-forretning rundt om den. Det er præcis hvad Runway, Midjourney og Adobe Firefly har gjort.</p>
+    <div class="cols-2" style="margin-bottom:18px;">
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:14px;">Nu &mdash; Google AI Studio</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="background:rgba(225,112,85,.06);border:1px solid rgba(225,112,85,.15);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.6);">Manual session hvert enkelt gang</div>
+          <div style="background:rgba(225,112,85,.06);border:1px solid rgba(225,112,85,.15);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.6);">Kun intern adgang &mdash; ingen rigtige kunder</div>
+          <div style="background:rgba(225,112,85,.06);border:1px solid rgba(225,112,85,.15);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.6);">Googles branding og UI &mdash; ikke vores</div>
+          <div style="background:rgba(225,112,85,.06);border:1px solid rgba(225,112,85,.15);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.6);">Nul revenue &mdash; ingen betalingsflow</div>
+          <div style="background:rgba(225,112,85,.06);border:1px solid rgba(225,112,85,.15);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.6);">Ingen historik &mdash; shoots gemmes ikke</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:14px;">Target &mdash; Hummel Creative Studio Platform</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="background:rgba(0,184,148,.06);border:1px solid rgba(0,184,148,.18);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.75);"><strong style="color:var(--white);">Brugerlogin</strong> &mdash; alle kunder har egne konti</div>
+          <div style="background:rgba(0,184,148,.06);border:1px solid rgba(0,184,148,.18);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.75);"><strong style="color:var(--white);">Stripe betalinger</strong> &mdash; credits og subscriptions</div>
+          <div style="background:rgba(0,184,148,.06);border:1px solid rgba(0,184,148,.18);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.75);"><strong style="color:var(--white);">Projekt-storage</strong> &mdash; alle shoots gemt permanent</div>
+          <div style="background:rgba(0,184,148,.06);border:1px solid rgba(0,184,148,.18);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.75);"><strong style="color:var(--white);">Hummel UI</strong> &mdash; vores brand, vores flow</div>
+          <div style="background:rgba(0,184,148,.06);border:1px solid rgba(0,184,148,.18);border-radius:9px;padding:11px 16px;font-size:13px;color:rgba(255,255,255,.75);"><strong style="color:var(--white);">Analytics</strong> &mdash; vi ved hvad kunderne laver</div>
+        </div>
+      </div>
+    </div>
+    <div class="infobox infobox-purple" style="display:flex;align-items:center;gap:14px;">
+      <span style="font-size:20px;flex-shrink:0;">&#x1F4A1;</span>
+      <span style="color:rgba(255,255,255,.7);font-size:13.5px;"><strong style="color:var(--white);">Den store indsigt:</strong> Vi opfinder ikke AI'en igen. Vi bygger den forretning rundt om den, som de store spillere har gjort. Runway og Midjourney er bygget på eksisterende AI-APIs &mdash; ikke proprietary models.</span>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: ARCHITECTURE -->
+<div class="slide" data-index="4">
+  <div class="max-w">
+    <div class="eyebrow">Slide 05 &mdash; Architecture</div>
+    <h2 class="headline">6 lag at bygge. <span class="accent-green">1 er allerede live.</span></h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 22px;">Standard SaaS-stack. Alle teknologier er battle-tested. Intet eksperimentelt &mdash; kun hurtig leverance.</p>
+    <div class="arch-stack">
+      <div class="arch-layer l1">
+        <div class="arch-icon">&#x1F5A5;</div>
+        <div class="arch-name">Frontend / UI</div>
+        <div class="arch-tech">Next.js + Tailwind</div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:12px;color:var(--muted);">Vores brand, vores flow, vores UX</span>
+          <span class="arch-badge build">Bygges</span>
+        </div>
+      </div>
+      <div class="arch-layer l2">
+        <div class="arch-icon">&#x1F510;</div>
+        <div class="arch-name">Auth + Brugerkonti</div>
+        <div class="arch-tech">Supabase Auth</div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:12px;color:var(--muted);">Login, signup, roller, sessions</span>
+          <span class="arch-badge build">Bygges</span>
+        </div>
+      </div>
+      <div class="arch-layer l3">
+        <div class="arch-icon">&#x1F4B3;</div>
+        <div class="arch-name">Betalinger</div>
+        <div class="arch-tech">Stripe</div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:12px;color:var(--muted);">Credits, subscriptions, fakturering</span>
+          <span class="arch-badge build">Bygges</span>
+        </div>
+      </div>
+      <div class="arch-layer l4">
+        <div class="arch-icon">&#x1F5C4;</div>
+        <div class="arch-name">Database + Storage</div>
+        <div class="arch-tech">Supabase (Postgres + S3)</div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:12px;color:var(--muted);">Projekter, modeller, shoots, historik</span>
+          <span class="arch-badge build">Bygges</span>
+        </div>
+      </div>
+      <div class="arch-layer l5">
+        <div class="arch-icon">&#x2699;&#xFE0F;</div>
+        <div class="arch-name">API / Backend</div>
+        <div class="arch-tech">Next.js API Routes</div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:12px;color:var(--muted);">Business logic, usage-tracking, orkestrering</span>
+          <span class="arch-badge build">Bygges</span>
+        </div>
+      </div>
+      <div class="arch-layer l6">
+        <div class="arch-icon">&#x2601;&#xFE0F;</div>
+        <div class="arch-name">Hosting</div>
+        <div class="arch-tech">Vercel</div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:12px;color:var(--muted);">Auto-scaling, global CDN, zero-config</span>
+          <span class="arch-badge build">Bygges</span>
+        </div>
+      </div>
+      <div class="arch-layer highlight" style="border-left:3px solid var(--green);">
+        <div class="arch-icon">&#x1F916;</div>
+        <div class="arch-name" style="color:var(--green);">AI Engine</div>
+        <div class="arch-tech" style="color:var(--teal);">Google AI Studio API</div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:12px;color:var(--green);font-weight:600;">Bevist. Fungerer. Klar til at flyttes ud.</span>
+          <span class="arch-badge live">&#x2713; Live i dag</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6: WHAT TO BUILD -->
+<div class="slide" data-index="5">
+  <div class="max-w">
+    <div class="eyebrow">Slide 06 &mdash; Build Priorities</div>
+    <h2 class="headline">Præcis hvad der skal <span class="accent">bygges.</span></h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 24px;">Prioriteret efter hvornaar det blokerer revenue. AI-laget roerer vi ikke.</p>
+    <div class="cols-3">
+      <div class="card" style="border-top:3px solid var(--purple);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--purple-l);margin-bottom:14px;">Sprint 1 &mdash; Foundation</div>
+        <ul class="bullets" style="font-size:12.5px;gap:8px;">
+          <li><strong>Bruger signup + login</strong></li>
+          <li><strong>Studio UI</strong> &mdash; vores eget shoot-flow</li>
+          <li><strong>Model upload + storage</strong></li>
+          <li><strong>Google AI backend-integration</strong></li>
+          <li><strong>Shoot-galleri</strong> &mdash; historik gemt</li>
+          <li><strong>Production deploy</strong> på Vercel</li>
+        </ul>
+        <div style="margin-top:14px;padding:8px 12px;background:rgba(108,92,231,.08);border:1px solid rgba(108,92,231,.18);border-radius:8px;font-size:11.5px;color:var(--purple-l);">
+          Leverance: Første eksterne bruger kan lave et shoot
+        </div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--teal);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--teal);margin-bottom:14px;">Sprint 2 &mdash; Revenue</div>
+        <ul class="bullets" style="font-size:12.5px;gap:8px;">
+          <li><strong>Stripe credits + subscriptions</strong></li>
+          <li><strong>Checkout flow</strong></li>
+          <li><strong>Bruger dashboard</strong> med balance</li>
+          <li><strong>Usage metering</strong> per generation</li>
+          <li><strong>Admin panel</strong> &mdash; se kunder og brug</li>
+          <li><strong>Email notifikationer</strong></li>
+        </ul>
+        <div style="margin-top:14px;padding:8px 12px;background:rgba(0,184,148,.06);border:1px solid rgba(0,184,148,.18);border-radius:8px;font-size:11.5px;color:var(--green);">
+          Leverance: Produktet tjener penge
+        </div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--green);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--green);margin-bottom:14px;">Sprint 3 &mdash; Scale</div>
+        <ul class="bullets" style="font-size:12.5px;gap:8px;">
+          <li><strong>Team workspaces</strong></li>
+          <li>Brand kit management</li>
+          <li>Batch generation</li>
+          <li>Prompt-historik og genbrug</li>
+          <li>API-adgang til agencies</li>
+          <li>White-label mulighed</li>
+        </ul>
+        <div style="margin-top:14px;padding:8px 12px;background:rgba(253,203,110,.06);border:1px solid rgba(253,203,110,.18);border-radius:8px;font-size:11.5px;color:var(--amber);">
+          Leverance: Skalerbar til B2B og agencies
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7: USER FLOW -->
+<div class="slide" data-index="6">
+  <div class="max-w" style="text-align:center;">
+    <div class="eyebrow">Slide 07 &mdash; User Experience</div>
+    <h2 class="headline">Fra landing page til <span class="accent">færdigt shoot på 5 min.</span></h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px auto 36px;max-width:580px;">Platformen skal fjerne al friktion. Første shoot skal være muligt inden for 5 minutter efter sign-up.</p>
+    <div class="flow" style="gap:0;margin-bottom:32px;">
+      <div class="flow-step">
+        <div class="flow-num">01</div>
+        <div class="flow-icon">&#x1F3E0;</div>
+        <div class="flow-label">Landing</div>
+        <div class="flow-sub">Se et shoot live</div>
+      </div>
+      <div class="flow-arrow">&#x203A;</div>
+      <div class="flow-step">
+        <div class="flow-num">02</div>
+        <div class="flow-icon">&#x270D;&#xFE0F;</div>
+        <div class="flow-label">Sign Up</div>
+        <div class="flow-sub">Email + kodeord</div>
+      </div>
+      <div class="flow-arrow">&#x203A;</div>
+      <div class="flow-step" style="border-color:rgba(108,92,231,.35);">
+        <div class="flow-num">03</div>
+        <div class="flow-icon">&#x1F4E4;</div>
+        <div class="flow-label">Upload Model</div>
+        <div class="flow-sub">Front + back portrait</div>
+      </div>
+      <div class="flow-arrow">&#x203A;</div>
+      <div class="flow-step" style="border-color:rgba(108,92,231,.35);">
+        <div class="flow-num">04</div>
+        <div class="flow-icon">&#x1F455;</div>
+        <div class="flow-label">Upload Tøj</div>
+        <div class="flow-sub">Plagg for plagg</div>
+      </div>
+      <div class="flow-arrow">&#x203A;</div>
+      <div class="flow-step" style="border-color:rgba(76,110,245,.4);">
+        <div class="flow-num">05</div>
+        <div class="flow-icon">&#x1F39B;&#xFE0F;</div>
+        <div class="flow-label">Sæt Scenen</div>
+        <div class="flow-sub">Lys, baggrund, look</div>
+      </div>
+      <div class="flow-arrow">&#x203A;</div>
+      <div class="flow-step" style="border-color:rgba(0,184,148,.4);">
+        <div class="flow-num">06</div>
+        <div class="flow-icon">&#x2B07;&#xFE0F;</div>
+        <div class="flow-label">Download</div>
+        <div class="flow-sub">Production-ready</div>
+      </div>
+    </div>
+    <div style="display:inline-flex;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <div style="padding:18px 28px;background:rgba(255,255,255,.03);border-right:1px solid var(--border);">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Traditionelt fotoshoot</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;color:var(--red);line-height:1;">2&ndash;4 uger</div>
+      </div>
+      <div style="padding:18px 28px;background:rgba(255,255,255,.03);border-right:1px solid var(--border);">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Med Hummel Studio</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;color:var(--green);line-height:1;">&lt; 5 minutter</div>
+      </div>
+      <div style="padding:18px 28px;background:rgba(255,255,255,.03);">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Besparelse</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;color:var(--amber);line-height:1;">80&ndash;95%</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8: ROADMAP -->
+<div class="slide" data-index="7">
+  <div class="max-w">
+    <div class="eyebrow">Slide 08 &mdash; Roadmap</div>
+    <h2 class="headline">3 sprints. <span class="accent-green">Revenue starter i uge 6.</span></h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 26px;">Struktureret til at generere omsætning så hurtigt som muligt &mdash; ikke et perfekt produkt fra dag 1.</p>
+    <div class="roadmap">
+      <div class="rm-phase p1">
+        <div class="rm-sprint">Sprint 1 &middot; Uge 1&ndash;5</div>
+        <div class="rm-title">Platform Foundation</div>
+        <ul class="bullets" style="font-size:12.5px;">
+          <li>Next.js app + Supabase setup</li>
+          <li>Bruger-login og signup</li>
+          <li>Studio UI (vores workflow)</li>
+          <li>Google AI API backend-integration</li>
+          <li>Model + shoot storage</li>
+          <li><strong>MVP klar til beta-brugere</strong></li>
+        </ul>
+        <div style="margin-top:14px;padding:8px 12px;background:rgba(108,92,231,.08);border:1px solid rgba(108,92,231,.18);border-radius:8px;font-size:11.5px;color:var(--purple-l);">
+          Første eksterne bruger kan lave et shoot
+        </div>
+      </div>
+      <div class="rm-phase p2">
+        <div class="rm-sprint">Sprint 2 &middot; Uge 6&ndash;10</div>
+        <div class="rm-title">Revenue Layer</div>
+        <ul class="bullets" style="font-size:12.5px;">
+          <li>Stripe subscriptions + credits</li>
+          <li>Checkout + betalingsflow</li>
+          <li>Bruger-dashboard + balance</li>
+          <li>Admin panel</li>
+          <li>Usage metering</li>
+          <li><strong>Første betalende kunder</strong></li>
+        </ul>
+        <div style="margin-top:14px;padding:8px 12px;background:rgba(0,184,148,.06);border:1px solid rgba(0,184,148,.18);border-radius:8px;font-size:11.5px;color:var(--green);">
+          Produktet tjener penge
+        </div>
+      </div>
+      <div class="rm-phase p3">
+        <div class="rm-sprint">Sprint 3 &middot; Uge 11&ndash;16</div>
+        <div class="rm-title">Scale &amp; Expand</div>
+        <ul class="bullets" style="font-size:12.5px;">
+          <li>Teams og samarbejde</li>
+          <li>Brand kit management</li>
+          <li>Batch generation</li>
+          <li>Agency API-adgang</li>
+          <li>Analytics dashboard</li>
+          <li><strong>Enterprise-klar</strong></li>
+        </ul>
+        <div style="margin-top:14px;padding:8px 12px;background:rgba(253,203,110,.06);border:1px solid rgba(253,203,110,.18);border-radius:8px;font-size:11.5px;color:var(--amber);">
+          Skalerbar til B2B og agencies
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 9: BUSINESS MODEL -->
+<div class="slide" data-index="8">
+  <div class="max-w">
+    <div class="eyebrow">Slide 09 &mdash; Business Model</div>
+    <h2 class="headline">Credits + subscription. <span class="accent">Høj margin.</span></h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 24px;">Samme model som Midjourney og Runway &mdash; lav variabel cost, Høj gross margin, forudsigelig MRR.</p>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;">
+      <div class="tier">
+        <div class="tier-name">Free</div>
+        <div class="tier-price"><sup>kr</sup>0</div>
+        <div class="tier-credits">10 credits / mo</div>
+        <ul><li>Prøv gratis, ingen kort</li><li>Watermark på exports</li><li>1 model</li></ul>
+      </div>
+      <div class="tier">
+        <div class="tier-name">Starter</div>
+        <div class="tier-price"><sup>kr</sup>299</div>
+        <div class="tier-credits">100 credits / mo</div>
+        <ul><li>Clean exports</li><li>3 modeller</li><li>Shoot-historik</li></ul>
+      </div>
+      <div class="tier featured">
+        <div class="tier-name" style="color:var(--purple-l);">Pro</div>
+        <div class="tier-price"><sup>kr</sup>799</div>
+        <div class="tier-credits">400 credits / mo</div>
+        <ul><li>Credits rulles over</li><li>10 modeller</li><li>Prioritets-generering</li></ul>
+      </div>
+      <div class="tier">
+        <div class="tier-name">Agency</div>
+        <div class="tier-price" style="font-size:1.3rem;">Custom</div>
+        <div class="tier-credits">Unlimited</div>
+        <ul><li>Team workspace</li><li>API-adgang</li><li>White-label</li></ul>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+      <div class="card" style="text-align:center;">
+        <div class="big-stat">
+          <div class="num" style="background:linear-gradient(135deg,var(--purple-l),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:2.2rem;">1 credit</div>
+          <div class="lbl">= 1 AI generation</div>
+        </div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="big-stat">
+          <div class="num" style="color:var(--green);font-size:2.2rem;">70&ndash;80%</div>
+          <div class="lbl">Gross margin på SaaS-lag</div>
+        </div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="big-stat">
+          <div class="num" style="color:var(--amber);font-size:2.2rem;">~2M kr</div>
+          <div class="lbl">ARR ved 500 Pro-kunder</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 10: CLOSING -->
+<div class="slide" data-index="9">
+  <div style="text-align:center;position:relative;z-index:1;max-width:800px;">
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);width:700px;height:300px;background:radial-gradient(ellipse,rgba(0,184,148,.1) 0%,transparent 70%);pointer-events:none;"></div>
+    <div class="pill"><span class="dot-live"></span>Next Step</div>
+    <h1 class="display" style="text-align:center;font-size:clamp(2.4rem,5vw,5rem);margin-bottom:24px;">
+      AI'en er bevist.<br/>
+      <span style="color:var(--green);">Nu bygger vi</span><br/>
+      produktet.
+    </h1>
+    <div style="width:60px;height:2px;background:linear-gradient(90deg,var(--green),var(--teal));margin:0 auto 28px;"></div>
+    <p style="font-size:16px;color:rgba(255,255,255,.55);line-height:1.8;max-width:580px;margin:0 auto 36px;">
+      Vi har det ingen andre har: <span style="color:rgba(255,255,255,.85);">en fungerende AI shoot-motor.</span><br/>
+      Det eneste der mangler er platformen rundt om den.<br/>
+      <span style="color:rgba(255,255,255,.85);">Det er 4&ndash;6 ugers arbejde.</span>
+    </p>
+    <div style="display:inline-flex;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <div style="padding:18px 28px;background:rgba(255,255,255,.03);border-right:1px solid var(--border);">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Build time</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:var(--white);">4&ndash;6 uger</div>
+      </div>
+      <div style="padding:18px 28px;background:rgba(255,255,255,.03);border-right:1px solid var(--border);">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Revenue fra</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:var(--green);">Uge 6</div>
+      </div>
+      <div style="padding:18px 28px;background:rgba(255,255,255,.03);">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Teknologirisiko</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:var(--purple-l);">Nul</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 11: VS CODE SOM HUB -->
+<div class="slide" data-index="10">
+  <div class="max-w">
+    <div class="eyebrow">Slide 11 &mdash; VS Code som Hub</div>
+    <h2 class="headline">VS Code er vores <span class="accent">produktionskontrolcenter.</span></h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 24px;">Alt lever i samme editor: kode, terminal, AI-assistent og deployment. &Eacute;t vindue &mdash; hele platformen.</p>
+    <div class="cols-3" style="margin-bottom:18px;">
+      <div class="card" style="border-top:3px solid var(--purple);">
+        <div style="font-size:22px;margin-bottom:10px;">&#x1F916;</div>
+        <div style="font-weight:700;font-size:13.5px;color:var(--white);margin-bottom:10px;">Claude Code CLI</div>
+        <ul class="bullets" style="font-size:12.5px;">
+          <li>K&oslash;r Claude direkte i VS Code terminal</li>
+          <li><code style="background:rgba(255,255,255,.08);padding:1px 6px;border-radius:4px;font-size:11px;">npx claude</code> &mdash; ingen installation</li>
+          <li>Claude l&aelig;ser hele projektet</li>
+          <li>Samme model som produktionskoden</li>
+          <li><strong>F&aring;r MVP-logik oversat til kode</strong></li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid var(--teal);">
+        <div style="font-size:22px;margin-bottom:10px;">&#x1F511;</div>
+        <div style="font-weight:700;font-size:13.5px;color:var(--white);margin-bottom:10px;">.env &mdash; API-n&oslash;glestyring</div>
+        <div style="background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:12px 14px;font-family:monospace;font-size:12px;color:#a29bfe;line-height:1.8;">
+          ANTHROPIC_API_KEY=sk-ant-...<br/>
+          CLAUDE_MODEL=claude-3-5-sonnet<br/>
+          MAX_TOKENS=4096
+        </div>
+        <ul class="bullets" style="font-size:12px;margin-top:12px;">
+          <li>N&oslash;gle gemmes <strong>aldrig</strong> i koden</li>
+          <li><code style="background:rgba(255,255,255,.08);padding:1px 6px;border-radius:4px;font-size:11px;">.env</code> tilf&oslash;jet til .gitignore</li>
+          <li>Samme n&oslash;gle bruges lokalt + Vercel</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid var(--green);">
+        <div style="font-size:22px;margin-bottom:10px;">&#x1F4C1;</div>
+        <div style="font-weight:700;font-size:13.5px;color:var(--white);margin-bottom:10px;">Projektstruktur</div>
+        <div style="background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:12px 14px;font-family:monospace;font-size:11.5px;color:rgba(255,255,255,.7);line-height:1.9;">
+          <span style="color:#a29bfe;">/src</span><br/>
+          &nbsp;&nbsp;<span style="color:#a29bfe;">/lib</span><br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#00cec9;">claude.ts</span> &larr; API-klient<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#00cec9;">prompts.ts</span> &larr; system-prompts<br/>
+          &nbsp;&nbsp;<span style="color:#a29bfe;">/api/generate</span><br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#00b894;">route.ts</span> &larr; vores endpoint
+        </div>
+      </div>
+    </div>
+    <div class="infobox infobox-purple" style="display:flex;align-items:center;gap:14px;">
+      <span style="font-size:18px;flex-shrink:0;">&#x1F4BB;</span>
+      <span style="color:rgba(255,255,255,.7);font-size:13.5px;"><strong style="color:var(--white);">Alt i &eacute;t vindue:</strong> Vi &aring;bner VS Code &mdash; og derfra bygger, tester, deployer og kommunikerer med Claude. Ingen context-switching, ingen tabte filer, ingen manuelle steps.</span>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 12: FRA GOOGLE AI TIL CLAUDE -->
+<div class="slide" data-index="11">
+  <div class="max-w">
+    <div class="eyebrow">Slide 12 &mdash; Migrering</div>
+    <h2 class="headline">Fra Google AI Studio <span class="accent">&rarr; Claude.</span> S&aring;dan g&oslash;r vi det.</h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 24px;">Vi eksporterer det vi har bygget, konverterer det til Claude-format og k&oslash;rer det i vores egen kodebase. 3 trin.</p>
+    <div class="cols-3" style="margin-bottom:18px;">
+      <div class="card" style="border-color:rgba(253,203,110,.25);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--amber);margin-bottom:14px;">Trin 1 &mdash; Eksport&eacute;r</div>
+        <ul class="bullets" style="font-size:12.5px;">
+          <li>Google AI Studio &rarr; Mine prompts</li>
+          <li>Download system-prompts som <code style="background:rgba(255,255,255,.08);padding:1px 5px;border-radius:3px;font-size:10px;">.txt</code></li>
+          <li>Notér model-indstillinger<br/>(temperature, top-p, max tokens)</li>
+          <li>Gem alle eksempel input/output par</li>
+          <li><strong>Alt du har bygget er reddet</strong></li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:rgba(108,92,231,.25);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--purple-l);margin-bottom:12px;">Trin 2 &mdash; Konvertér</div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">Google AI format:</div>
+        <div style="background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:8px 12px;font-family:monospace;font-size:11px;color:rgba(255,255,255,.6);margin-bottom:10px;line-height:1.6;">System: &ldquo;You are a photo studio...&rdquo;<br/>User: &ldquo;Generate shoot for [model]&rdquo;</div>
+        <div style="font-size:10px;color:var(--green);margin-bottom:4px;">Claude format (prompts.ts):</div>
+        <div style="background:rgba(0,0,0,.4);border:1px solid rgba(0,184,148,.2);border-radius:6px;padding:8px 12px;font-family:monospace;font-size:11px;color:#a29bfe;line-height:1.6;">const systemPrompt = `<br/>&nbsp;&nbsp;You are an expert AI<br/>&nbsp;&nbsp;fashion photographer...<br/>`</div>
+      </div>
+      <div class="card" style="border-color:rgba(0,184,148,.25);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--green);margin-bottom:14px;">Trin 3 &mdash; Validér</div>
+        <ul class="bullets" style="font-size:12.5px;">
+          <li>K&oslash;r de samme test-cases i Claude som Google AI</li>
+          <li>Sammenlign output kvalitet side om side</li>
+          <li>Claude 200k kontekst &rarr; <strong>bedre end Google AI</strong></li>
+          <li>Justér system-prompt til output er bedre</li>
+          <li><strong>Hele processen: 2&ndash;3 dage</strong></li>
+        </ul>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 24px;background:rgba(225,112,85,.04);border-right:1px solid var(--border);text-align:center;">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Google AI kontekst</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700;color:var(--red);">~32k tokens</div>
+      </div>
+      <div style="padding:14px 16px;font-size:18px;color:var(--muted);">&#x2192;</div>
+      <div style="padding:14px 24px;background:rgba(0,184,148,.05);border-right:1px solid var(--border);text-align:center;">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Claude 3.5 Sonnet</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700;color:var(--green);">200k tokens</div>
+      </div>
+      <div style="padding:14px 16px;font-size:18px;color:var(--muted);">&#x2192;</div>
+      <div style="padding:14px 24px;background:rgba(108,92,231,.05);text-align:center;">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Kontekst forbedring</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700;color:var(--purple-l);">6&times; mere</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 13: ARKITEKTUR MED CLAUDE SDK -->
+<div class="slide" data-index="12">
+  <div class="max-w">
+    <div class="eyebrow">Slide 13 &mdash; Claude Arkitektur</div>
+    <h2 class="headline">Koden der binder <span class="accent">alt sammen.</span></h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 22px;">Anthropic TypeScript SDK &mdash; 10 linjer kode erstatter hele Google AI Studio-sessionen.</p>
+    <div class="cols-2" style="margin-bottom:16px;">
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--purple-l);margin-bottom:10px;">lib/claude.ts &mdash; API-klienten</div>
+        <div style="background:rgba(0,0,0,.5);border:1px solid rgba(108,92,231,.25);border-radius:10px;padding:16px 18px;font-family:monospace;font-size:12px;line-height:1.8;">
+          <span style="color:#6c5ce7;">import</span> <span style="color:rgba(255,255,255,.8);">Anthropic</span> <span style="color:#6c5ce7;">from</span> <span style="color:#00b894;">'@anthropic-ai/sdk'</span><br/><br/>
+          <span style="color:#6c5ce7;">const</span> <span style="color:#a29bfe;">client</span> = <span style="color:#6c5ce7;">new</span> <span style="color:rgba(255,255,255,.8);">Anthropic</span>({<br/>
+          &nbsp;&nbsp;<span style="color:#00cec9;">apiKey</span>: <span style="color:rgba(255,255,255,.6);">process.env</span>.<span style="color:#fdcb6e;">ANTHROPIC_API_KEY</span><br/>
+          })<br/><br/>
+          <span style="color:#6c5ce7;">export async function</span> <span style="color:#00b894;">generateShoot</span>(<span style="color:#fdcb6e;">prompt</span>) {<br/>
+          &nbsp;&nbsp;<span style="color:#6c5ce7;">return await</span> client.messages.<span style="color:#00cec9;">create</span>({<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#00cec9;">model</span>: <span style="color:#00b894;">'claude-3-5-sonnet-20241022'</span>,<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#00cec9;">system</span>: systemPrompt,<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#00cec9;">messages</span>: [{ <span style="color:#00cec9;">role</span>: <span style="color:#00b894;">'user'</span>, <span style="color:#00cec9;">content</span>: prompt }]<br/>
+          &nbsp;&nbsp;})<br/>
+          }
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="card" style="border-color:rgba(0,184,148,.2);">
+          <div style="font-size:12px;font-weight:700;color:var(--white);margin-bottom:8px;">&#x26A1;&#xFE0F; Streaming &mdash; ingen spinner</div>
+          <ul class="bullets" style="font-size:12px;">
+            <li>Svar vises <strong>token for token</strong> i realtid</li>
+            <li>Reducerer oplevet ventetid med ~70%</li>
+            <li>Samme f&oslash;lelse som ChatGPT</li>
+          </ul>
+        </div>
+        <div class="card" style="border-color:rgba(253,203,110,.2);">
+          <div style="font-size:12px;font-weight:700;color:var(--white);margin-bottom:8px;">&#x1F512; Sikkerhed fra dag 1</div>
+          <ul class="bullets" style="font-size:12px;">
+            <li>API-n&oslash;gle kun i <code style="background:rgba(255,255,255,.08);padding:1px 5px;border-radius:3px;">.env</code> &mdash; aldrig i koden</li>
+            <li>S&aelig;t spending limit p&aring; Anthropic dashboard</li>
+            <li>Log kald med <code style="background:rgba(255,255,255,.08);padding:1px 5px;border-radius:3px;">userId</code> &mdash; aldrig med n&oslash;glen</li>
+          </ul>
+        </div>
+        <div class="card" style="border-color:rgba(108,92,231,.2);">
+          <div style="font-size:12px;font-weight:700;color:var(--white);margin-bottom:8px;">&#x1F4E6; Installation</div>
+          <div style="background:rgba(0,0,0,.4);border-radius:6px;padding:8px 12px;font-family:monospace;font-size:12px;color:#a29bfe;">npm install @anthropic-ai/sdk</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;">&Eacute;n pakke. Ingen opsætning. Virker.</div>
+        </div>
+      </div>
+    </div>
+    <div class="infobox infobox-green" style="display:flex;align-items:center;gap:14px;">
+      <span style="font-size:18px;flex-shrink:0;">&#x1F4A1;</span>
+      <span style="color:rgba(255,255,255,.7);font-size:13.5px;">Hele <strong style="color:var(--white);">Google AI Studio-sessionen</strong> erstattes af &eacute;n <code style="background:rgba(255,255,255,.08);padding:1px 6px;border-radius:4px;">lib/claude.ts</code> fil og en <code style="background:rgba(255,255,255,.08);padding:1px 6px;border-radius:4px;">.env</code> fil. Det er det. Vi ejer nu hele kaldet.</span>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 14: TIMER ESTIMAT -->
+<div class="slide" data-index="13">
+  <div class="max-w">
+    <div class="eyebrow">Slide 14 &mdash; Ressourceplan</div>
+    <h2 class="headline">Fra MVP til marked: <span class="accent">~700 timer.</span></h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 22px;">
+      10 uger. Lille dedikeret team. VS Code + Claude Code som daglig co-developer sparer 30&ndash;40% udviklertid.
+    </p>
+    <div style="width:100%;margin-bottom:16px;">
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;font-size:12px;">
+        <div style="padding:9px 14px;background:rgba(255,255,255,.04);font-weight:700;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">Fase</div>
+        <div style="padding:9px 14px;background:rgba(255,255,255,.04);font-weight:700;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--purple-l);text-align:right;">Dev</div>
+        <div style="padding:9px 14px;background:rgba(255,255,255,.04);font-weight:700;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);text-align:right;">AI Eng</div>
+        <div style="padding:9px 14px;background:rgba(255,255,255,.04);font-weight:700;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);text-align:right;">PM+Design</div>
+        <div style="padding:9px 14px;background:rgba(255,255,255,.04);font-weight:700;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--white);text-align:right;">Total</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);color:rgba(255,255,255,.75);">Uge 1-2 &mdash; Migr&eacute;r MVP &rarr; Claude SDK, auth, DB</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--purple-l);">60h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--teal);">30h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--amber);">10h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;font-weight:600;">100h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);color:rgba(255,255,255,.75);">Uge 3-4 &mdash; Upload-flow, genererings-UI, job queue</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--purple-l);">60h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--teal);">20h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--amber);">20h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;font-weight:600;">100h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);color:rgba(255,255,255,.75);">Uge 5-6 &mdash; Dashboard, galleri, CDN/storage</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--purple-l);">60h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--teal);">20h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--amber);">20h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;font-weight:600;">100h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);color:rgba(255,255,255,.75);">Uge 7 &mdash; Stripe betaling &amp; abonnement</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--purple-l);">40h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--teal);">0h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--amber);">10h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;font-weight:600;">50h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);color:rgba(255,255,255,.75);">Uge 8 &mdash; Admin-panel, brand-settings</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--purple-l);">40h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--teal);">10h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--amber);">10h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;font-weight:600;">60h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);color:rgba(255,255,255,.75);">Uge 9 &mdash; Test, bugfix, sikkerhed, GDPR</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--purple-l);">40h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--teal);">10h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--amber);">10h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;font-weight:600;">60h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);color:rgba(255,255,255,.75);">Uge 10 &mdash; Prod-deploy, onboarding f&oslash;rste kunder</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--purple-l);">30h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--teal);">10h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;color:var(--amber);">20h</div>
+        <div style="padding:7px 14px;border-top:1px solid var(--border);text-align:right;font-weight:600;">60h</div>
+        <div style="padding:10px 14px;border-top:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);font-weight:700;color:var(--white);">TOTAL</div>
+        <div style="padding:10px 14px;border-top:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);text-align:right;font-weight:700;color:var(--purple-l);">330h</div>
+        <div style="padding:10px 14px;border-top:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);text-align:right;font-weight:700;color:var(--teal);">100h</div>
+        <div style="padding:10px 14px;border-top:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);text-align:right;font-weight:700;color:var(--amber);">100h</div>
+        <div style="padding:10px 14px;border-top:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);text-align:right;font-weight:800;font-size:14px;color:var(--green);">530h</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+      <div style="background:rgba(108,92,231,.08);border:1px solid rgba(108,92,231,.25);border-radius:10px;padding:12px 16px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--purple-l);margin-bottom:6px;">Uden VS Code + Claude</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;color:rgba(255,255,255,.4);">~820h</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">Manuel kode, ingen AI-assistent</div>
+      </div>
+      <div style="background:rgba(0,184,148,.08);border:1px solid rgba(0,184,148,.3);border-radius:10px;padding:12px 16px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:6px;">Med VS Code + Claude Code</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;color:var(--green);">~530h</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">30&ndash;40% hurtigere uden at sk&aelig;re hj&oslash;rner</div>
+      </div>
+      <div style="background:rgba(253,203,110,.06);border:1px solid rgba(253,203,110,.3);border-radius:10px;padding:12px 16px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:6px;">Med buffer (+30%)</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;color:var(--amber);">~700h</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">Realistisk total inkl. det uforudsete</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- Navigation -->
+<div class="nav">
+  <button onclick="prev()">&#x2039;</button>
+  <div class="nav-dots" id="dots"></div>
+  <button onclick="next()">&#x203A;</button>
+  <div class="slide-counter" id="counter">1 / 14</div>
+</div>
+
+<div style="position:fixed;top:20px;right:24px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.13);z-index:100;">Arrow keys to navigate</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total  = slides.length;
+  let current  = 0;
+
+  const dotsEl = document.getElementById('dots');
+  for (let i = 0; i < total; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goto(i);
+    dotsEl.appendChild(d);
+  }
+
+  function goto(n) {
+    if (n === current || n < 0 || n >= total) return;
+    const prev_idx = current;
+    slides[prev_idx].classList.remove('active');
+    slides[prev_idx].classList.add('exit-l');
+    current = n;
+    slides[current].classList.add('active');
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+    document.getElementById('counter').textContent = (current + 1) + ' / ' + total;
+    setTimeout(() => slides[prev_idx].classList.remove('exit-l'), 450);
+  }
+
+  function next() { goto(current + 1); }
+  function prev() { goto(current - 1); }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowLeft')                   { e.preventDefault(); prev(); }
+  });
+</script>
+</body>
+</html>
+
