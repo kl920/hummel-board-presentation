@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clad — AI Photo Studio for Fashion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0a0a14;
+    --bg-2:      #0e0d1a;
+    --surface:   #13121f;
+    --surface-2: #1a1928;
+    --border:    #1e1d2e;
+    --border-2:  #2a2840;
+    --purple:    #6c5ce7;
+    --purple-l:  #a29bfe;
+    --purple-d:  #4834d4;
+    --teal:      #00cec9;
+    --green:     #00b894;
+    --text:      #e8e8f0;
+    --text-2:    #b0b0c0;
+    --muted:     #6b6b80;
+    --radius:    12px;
+    --radius-lg: 20px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  .label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--purple-l);
+  }
+
+  /* ─── NAV ───────────────────────────────────────── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+    background: rgba(10,10,20,0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-inner {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 40px;
+  }
+
+  .logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 0.06em;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo-mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, var(--purple) 0%, var(--teal) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0;
+    flex-shrink: 0;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+    margin-left: 12px;
+  }
+
+  .nav-links a {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-2);
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 20px;
+    border-radius: 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-2);
+  }
+
+  .btn-ghost:hover { color: var(--text); }
+
+  .btn-primary {
+    background: var(--purple);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(108,92,231,0.35);
+  }
+
+  .btn-primary:hover {
+    background: var(--purple-d);
+    box-shadow: 0 0 28px rgba(108,92,231,0.5);
+    transform: translateY(-1px);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border-2);
+  }
+
+  .btn-outline:hover {
+    border-color: var(--purple-l);
+    color: var(--purple-l);
+  }
+
+  .btn-lg {
+    padding: 14px 28px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+
+  /* ─── HERO ───────────────────────────────────────── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 120px 32px 80px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px; left: 50%;
+    transform: translateX(-50%);
+    width: 900px;
+    height: 600px;
+    background: radial-gradient(ellipse at center, rgba(108,92,231,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -100px; left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse at center, rgba(0,206,201,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 100px;
+    border: 1px solid var(--border-2);
+    background: var(--surface);
+    font-size: 13px;
+    color: var(--text-2);
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-badge .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    flex-shrink: 0;
+  }
+
+  .hero h1 {
+    font-size: clamp(42px, 6vw, 76px);
+    font-weight: 700;
+    color: var(--text);
+    max-width: 860px;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero h1 .gradient {
+    background: linear-gradient(135deg, var(--purple-l) 0%, var(--teal) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: clamp(17px, 2vw, 20px);
+    color: var(--text-2);
+    max-width: 560px;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 1;
+    line-height: 1.7;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-note {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 64px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* App mockup */
+  .hero-mockup {
+    width: 100%;
+    max-width: 960px;
+    position: relative;
+    z-index: 1;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 60px rgba(108,92,231,0.1);
+  }
+
+  .mockup-bar {
+    height: 40px;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 8px;
+  }
+
+  .mockup-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  .mockup-dot:nth-child(1) { background: #ff5f57; }
+  .mockup-dot:nth-child(2) { background: #febc2e; }
+  .mockup-dot:nth-child(3) { background: #28c840; }
+
+  .mockup-url {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .mockup-body {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 440px;
+  }
+
+  .mockup-sidebar {
+    background: var(--bg-2);
+    border-right: 1px solid var(--border);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .mockup-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 3px;
+  }
+
+  .mockup-tab {
+    padding: 7px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .mockup-tab.active {
+    background: var(--purple);
+    color: #fff;
+  }
+
+  .mockup-uploads {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .mockup-upload-box {
+    aspect-ratio: 3/4;
+    border: 1.5px dashed var(--border-2);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--muted);
+    background: var(--surface);
+  }
+
+  .mockup-upload-icon {
+    width: 22px; height: 22px;
+    border: 1.5px solid var(--border-2);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .mockup-scale-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .mockup-scale-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .mockup-scale-dots {
+    display: flex;
+    gap: 5px;
+  }
+
+  .mockup-scale-dot {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--border-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .mockup-scale-dot.active {
+    background: var(--purple);
+    border-color: var(--purple);
+    color: #fff;
+  }
+
+  .mockup-canvas {
+    background: #07060f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .mockup-canvas-text {
+    text-align: center;
+  }
+
+  .mockup-canvas-icon {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    border: 2px solid var(--border-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    color: var(--border-2);
+    font-size: 26px;
+  }
+
+  .mockup-canvas-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ─── SOCIAL PROOF ───────────────────────────────── */
+  .social-proof {
+    padding: 40px 32px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-2);
+  }
+
+  .social-proof-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .social-proof p {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+
+  .brand-logos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+
+  .brand-logo-pill {
+    padding: 10px 24px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    background: var(--surface);
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .brand-logo-pill:hover { color: var(--text-2); border-color: var(--border-2); }
+
+  /* ─── RESPONSIVE ─────────────────────────────────── */
+  @media (max-width: 768px) {
+    nav { padding: 0 20px; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 20px 60px; }
+    .mockup-body { grid-template-columns: 1fr; }
+    .mockup-sidebar { display: none; }
+    .brand-logos { gap: 16px; }
+    .brand-logo-pill { padding: 8px 16px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">
+      <span class="logo-mark">C</span>
+      CLAD
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how-it-works">How it works</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="#" class="btn btn-ghost">Log in</a>
+      <a href="#" class="btn btn-primary">Get started free</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="dot"></span>
+    Now in early access — join the waitlist
+  </div>
+  <h1>Shoot any look.<br><span class="gradient">No studio. No wait.</span></h1>
+  <p class="hero-sub">Upload your garment, pick an AI model, get studio-quality fashion photos. Ready in minutes — not weeks.</p>
+  <div class="hero-actions">
+    <a href="#" class="btn btn-primary btn-lg">Get started free</a>
+    <a href="#" class="btn btn-outline btn-lg">See it in action →</a>
+  </div>
+  <p class="hero-note">No credit card required &nbsp;·&nbsp; First 5 shoots free</p>
+
+  <!-- App mockup -->
+  <div class="hero-mockup">
+    <div class="mockup-bar">
+      <div class="mockup-dot"></div>
+      <div class="mockup-dot"></div>
+      <div class="mockup-dot"></div>
+      <div class="mockup-url">app.clad.io</div>
+    </div>
+    <div class="mockup-body">
+      <div class="mockup-sidebar">
+        <div class="mockup-tabs">
+          <div class="mockup-tab active">Model</div>
+          <div class="mockup-tab">Style</div>
+        </div>
+        <div class="mockup-tabs" style="margin-top:-8px">
+          <div class="mockup-tab active">Studio</div>
+          <div class="mockup-tab">Refine</div>
+        </div>
+        <div style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:4px">Model Assets</div>
+        <div class="mockup-uploads">
+          <div class="mockup-upload-box">
+            <div class="mockup-upload-icon">↑</div>
+            <span>Front</span>
+          </div>
+          <div class="mockup-upload-box">
+            <div class="mockup-upload-icon">↑</div>
+            <span>Back</span>
+          </div>
+        </div>
+        <div class="mockup-scale-row">
+          <div class="mockup-scale-label">Fit Scale</div>
+          <div class="mockup-scale-dots">
+            <div class="mockup-scale-dot">0</div>
+            <div class="mockup-scale-dot">1</div>
+            <div class="mockup-scale-dot active">2</div>
+            <div class="mockup-scale-dot">3</div>
+            <div class="mockup-scale-dot">4</div>
+          </div>
+        </div>
+        <div class="mockup-scale-row">
+          <div class="mockup-scale-label">Drape Scale</div>
+          <div class="mockup-scale-dots">
+            <div class="mockup-scale-dot">0</div>
+            <div class="mockup-scale-dot">1</div>
+            <div class="mockup-scale-dot active">2</div>
+            <div class="mockup-scale-dot">3</div>
+            <div class="mockup-scale-dot">4</div>
+          </div>
+        </div>
+      </div>
+      <div class="mockup-canvas">
+        <div class="mockup-canvas-text">
+          <div class="mockup-canvas-icon">⬡</div>
+          <div class="mockup-canvas-label">Engine standby</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:4px;letter-spacing:.08em">Workspace ready for creative output</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<section class="social-proof">
+  <div class="social-proof-inner">
+    <p>Trusted by forward-thinking fashion brands</p>
+    <div class="brand-logos">
+      <span class="brand-logo-pill">HUMMEL</span>
+      <span class="brand-logo-pill">BESTSELLER</span>
+      <span class="brand-logo-pill">VERO MODA</span>
+      <span class="brand-logo-pill">JACK &amp; JONES</span>
+      <span class="brand-logo-pill">SELECTED</span>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" style="padding:100px 32px;background:var(--bg);">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:64px;">
+      <div class="label" style="margin-bottom:16px;">Features</div>
+      <h2 style="font-size:clamp(32px,4vw,52px);max-width:640px;margin:0 auto 20px;">One platform. Every step of the shoot.</h2>
+      <p style="font-size:17px;color:var(--text-2);max-width:500px;margin:0 auto;">From raw garment image to final campaign photo — without a photographer, studio, or model booking.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;">
+
+      <div class="feat-card">
+        <div class="feat-icon" style="background:linear-gradient(135deg,rgba(108,92,231,.25),rgba(108,92,231,.05));">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--purple-l)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <h3 class="feat-title">Garment Upload</h3>
+        <p class="feat-desc">Upload front and back product photos. We handle the rest — no special lighting or equipment needed.</p>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon" style="background:linear-gradient(135deg,rgba(0,206,201,.25),rgba(0,206,201,.05));">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </div>
+        <h3 class="feat-title">AI Model Selection</h3>
+        <p class="feat-desc">Choose from a diverse library of AI models. Control pose, direction, expression and drape scale precisely.</p>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon" style="background:linear-gradient(135deg,rgba(0,184,148,.25),rgba(0,184,148,.05));">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <h3 class="feat-title">AI Generation</h3>
+        <p class="feat-desc">Our engine renders your garment onto the model with natural drape, fit, and studio lighting in seconds.</p>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon" style="background:linear-gradient(135deg,rgba(253,203,110,.2),rgba(253,203,110,.03));">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fdcb6e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <h3 class="feat-title">Export &amp; Refine</h3>
+        <p class="feat-desc">Download high-resolution images instantly. Use the Refine mode to tweak specific details before exporting.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .feat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px 28px;
+    transition: border-color .25s, transform .25s;
+  }
+  .feat-card:hover {
+    border-color: var(--border-2);
+    transform: translateY(-4px);
+  }
+  .feat-icon {
+    width: 52px; height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .feat-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .feat-desc { font-size: 15px; color: var(--text-2); line-height: 1.65; }
+</style>
+
+<!-- HOW IT WORKS -->
+<section id="how-it-works" style="padding:100px 32px;background:var(--bg-2);border-top:1px solid var(--border);">
+  <div style="max-width:900px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:64px;">
+      <div class="label" style="margin-bottom:16px;">How it works</div>
+      <h2 style="font-size:clamp(32px,4vw,52px);margin-bottom:20px;">From garment to gallery in 3 steps</h2>
+      <p style="font-size:17px;color:var(--text-2);">What used to take 4 weeks and 80,000 DKK now takes 15 minutes.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:4px;position:relative;">
+
+      <div class="step-row">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <h3 class="step-title">Upload your garment</h3>
+          <p class="step-desc">Shoot your garment flat or on a hanger — that's all you need. Upload front and back. No studio lighting required.</p>
+        </div>
+        <div class="step-visual">
+          <div style="border:1.5px dashed var(--border-2);border-radius:12px;padding:28px 24px;text-align:center;color:var(--muted);font-size:13px;">
+            <div style="font-size:28px;margin-bottom:8px;">↑</div>
+            Drop your garment photo here
+          </div>
+        </div>
+      </div>
+
+      <div class="step-connector"></div>
+
+      <div class="step-row">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <h3 class="step-title">Pick your model &amp; style</h3>
+          <p class="step-desc">Select an AI model from our library. Set pose, expression, fit scale and drape. No casting calls, no travel, no delays.</p>
+        </div>
+        <div class="step-visual">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;gap:8px;">
+              <div style="flex:1;padding:8px;border-radius:8px;background:var(--purple);font-size:11px;font-weight:600;text-align:center;letter-spacing:.06em;">MODEL A</div>
+              <div style="flex:1;padding:8px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);font-size:11px;color:var(--muted);text-align:center;letter-spacing:.06em;">MODEL B</div>
+              <div style="flex:1;padding:8px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);font-size:11px;color:var(--muted);text-align:center;letter-spacing:.06em;">MODEL C</div>
+            </div>
+            <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">Drape Scale</div>
+            <div style="display:flex;gap:6px;">
+              <div style="width:32px;height:32px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);">0</div>
+              <div style="width:32px;height:32px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);">1</div>
+              <div style="width:32px;height:32px;border-radius:7px;background:var(--purple);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;">2</div>
+              <div style="width:32px;height:32px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);">3</div>
+              <div style="width:32px;height:32px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);">4</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-connector"></div>
+
+      <div class="step-row">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <h3 class="step-title">Download campaign-ready photos</h3>
+          <p class="step-desc">Get high-resolution images in seconds. Export to e-commerce, lookbook, social — or refine further in-app.</p>
+        </div>
+        <div class="step-visual">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1;">
+              <div style="background:linear-gradient(135deg,#1a1928,#0e0d1a);border-radius:6px;aspect-ratio:3/4;border:1px solid var(--border);"></div>
+              <div style="background:linear-gradient(135deg,#1a1928,#0e0d1a);border-radius:6px;aspect-ratio:3/4;border:1px solid var(--border);"></div>
+            </div>
+            <a href="#" class="btn btn-primary" style="white-space:nowrap;font-size:12px;padding:10px 16px;">↓ Download</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .step-row {
+    display: grid;
+    grid-template-columns: 64px 1fr 1fr;
+    gap: 32px;
+    align-items: center;
+    padding: 32px 0;
+  }
+  .step-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--border-2);
+    line-height: 1;
+  }
+  .step-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .step-desc { font-size: 15px; color: var(--text-2); line-height: 1.65; }
+  .step-connector {
+    height: 1px;
+    background: var(--border);
+    margin: 0 0 0 64px;
+  }
+  @media (max-width: 768px) {
+    .step-row { grid-template-columns: 40px 1fr; }
+    .step-visual { display: none; }
+    .step-connector { margin-left: 40px; }
+  }
+</style>
+
+<!-- USE CASES -->
+<section id="use-cases" style="padding:100px 32px;background:var(--bg);border-top:1px solid var(--border);">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:60px;">
+      <div class="label" style="margin-bottom:16px;">Use Cases</div>
+      <h2 style="font-size:clamp(32px,4vw,52px);margin-bottom:20px;">Built for every channel</h2>
+      <p style="font-size:17px;color:var(--text-2);max-width:480px;margin:0 auto;">Whether you're shooting for web, social, print or a lookbook — Clad delivers.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:4px;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
+
+      <div class="uc-card">
+        <div class="uc-icon">🛒</div>
+        <h3 class="uc-title">E-commerce</h3>
+        <p class="uc-desc">Consistent, on-model product shots for your webshop. Shoot your entire new collection in one afternoon.</p>
+        <div class="uc-stat">Up to <strong>90% cheaper</strong> than traditional photo production</div>
+      </div>
+
+      <div class="uc-card">
+        <div class="uc-icon">📖</div>
+        <h3 class="uc-title">Lookbook</h3>
+        <p class="uc-desc">Create seasonal lookbooks without coordinating shoots, locations, or travel. Ready in hours, not weeks.</p>
+        <div class="uc-stat">From concept to delivery in <strong>under 24 hours</strong></div>
+      </div>
+
+      <div class="uc-card">
+        <div class="uc-icon">📱</div>
+        <h3 class="uc-title">Social Media</h3>
+        <p class="uc-desc">Always-on content for Instagram, TikTok and Pinterest. Test multiple styles and models before committing.</p>
+        <div class="uc-stat"><strong>10x more content</strong> from the same garment</div>
+      </div>
+
+      <div class="uc-card">
+        <div class="uc-icon">🏬</div>
+        <h3 class="uc-title">Marketplace</h3>
+        <p class="uc-desc">Meet platform requirements for Zalando, ASOS and Amazon with studio-grade on-model photography at scale.</p>
+        <div class="uc-stat">Platform-compliant output <strong>every time</strong></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .uc-card {
+    background: var(--surface);
+    padding: 40px 32px;
+    transition: background .2s;
+  }
+  .uc-card:hover { background: var(--surface-2); }
+  .uc-icon { font-size: 28px; margin-bottom: 16px; }
+  .uc-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .uc-desc { font-size: 14px; color: var(--text-2); line-height: 1.7; margin-bottom: 16px; }
+  .uc-stat {
+    font-size: 13px;
+    color: var(--muted);
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .uc-stat strong { color: var(--purple-l); }
+</style>
+
+<!-- TESTIMONIALS -->
+<section style="padding:100px 32px;background:var(--bg-2);border-top:1px solid var(--border);">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:60px;">
+      <div class="label" style="margin-bottom:16px;">Testimonials</div>
+      <h2 style="font-size:clamp(28px,4vw,48px);margin-bottom:16px;">Fashion teams love Clad</h2>
+      <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:6px;">
+        <span style="color:#fdcb6e;font-size:18px;">★★★★★</span>
+      </div>
+      <p style="font-size:14px;color:var(--muted);">Rated 4.8/5 from early access users</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;">
+
+      <div class="testi-card">
+        <p class="testi-quote">"What used to take us 3 weeks and a full production crew now takes our team half a day. The quality is indistinguishable from a real shoot."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">SJ</div>
+          <div>
+            <div class="testi-name">Sofie Jensen</div>
+            <div class="testi-role">Head of E-commerce · Bestseller</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi-card">
+        <p class="testi-quote">"We launched a 200-piece collection on Zalando in 48 hours. Previously that would have taken 6 weeks. Clad is a complete game-changer for our workflow."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">MH</div>
+          <div>
+            <div class="testi-name">Mikkel Hansen</div>
+            <div class="testi-role">Creative Director · Independent Label</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi-card">
+        <p class="testi-quote">"The drape and fit quality is remarkable. Our customers can't tell the difference — and our conversion rate went up 23% after switching to Clad images."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">AL</div>
+          <div>
+            <div class="testi-name">Anna Larsen</div>
+            <div class="testi-role">CMO · Scandinavian Fashion Brand</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .testi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    transition: border-color .25s;
+  }
+  .testi-card:hover { border-color: var(--border-2); }
+  .testi-quote {
+    font-size: 15px;
+    color: var(--text-2);
+    line-height: 1.75;
+    font-style: italic;
+    flex: 1;
+  }
+  .testi-author { display: flex; align-items: center; gap: 12px; }
+  .testi-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple), var(--teal));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .testi-name { font-weight: 600; font-size: 14px; }
+  .testi-role { font-size: 12px; color: var(--muted); margin-top: 2px; }
+</style>
+
+<!-- PRICING -->
+<section id="pricing" style="padding:100px 32px;background:var(--bg);border-top:1px solid var(--border);">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:64px;">
+      <div class="label" style="margin-bottom:16px;">Pricing</div>
+      <h2 style="font-size:clamp(32px,4vw,52px);margin-bottom:20px;">Simple, transparent pricing</h2>
+      <p style="font-size:17px;color:var(--text-2);">Start free. Scale as you grow. No hidden fees.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;align-items:start;">
+
+      <!-- Starter -->
+      <div class="price-card">
+        <div class="price-tier">Starter</div>
+        <div class="price-amount">€29<span class="price-period">/month</span></div>
+        <p class="price-desc">Everything you need to get started with AI fashion photography.</p>
+        <a href="#" class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:28px;">Get started</a>
+        <ul class="price-features">
+          <li>✓ 50 AI-generated images/month</li>
+          <li>✓ 10 AI model assets</li>
+          <li>✓ Standard resolution export</li>
+          <li>✓ Fit &amp; Drape scale controls</li>
+          <li>✓ Email support</li>
+        </ul>
+      </div>
+
+      <!-- Pro — highlighted -->
+      <div class="price-card price-card-featured">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <div class="price-tier" style="color:var(--purple-l);">Pro</div>
+          <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;background:var(--purple);color:#fff;padding:3px 10px;border-radius:100px;">Most popular</span>
+        </div>
+        <div class="price-amount">€79<span class="price-period">/month</span></div>
+        <p class="price-desc">For growing fashion brands that need volume and quality.</p>
+        <a href="#" class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:28px;">Get started</a>
+        <ul class="price-features">
+          <li>✓ 300 AI-generated images/month</li>
+          <li>✓ Unlimited AI model assets</li>
+          <li>✓ High-res + retouched export</li>
+          <li>✓ Refine mode (detail editing)</li>
+          <li>✓ Prompt Hub access</li>
+          <li>✓ Priority support</li>
+        </ul>
+      </div>
+
+      <!-- Agency -->
+      <div class="price-card">
+        <div class="price-tier">Agency</div>
+        <div class="price-amount" style="font-size:32px;">Custom</div>
+        <p class="price-desc">For studios, agencies and brands with high-volume production needs.</p>
+        <a href="#" class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:28px;">Contact us</a>
+        <ul class="price-features">
+          <li>✓ Unlimited generation volume</li>
+          <li>✓ Custom AI model training</li>
+          <li>✓ White-label output</li>
+          <li>✓ API access</li>
+          <li>✓ Dedicated account manager</li>
+          <li>✓ SLA guarantee</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .price-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 36px 32px;
+  }
+  .price-card-featured {
+    border-color: var(--purple);
+    box-shadow: 0 0 40px rgba(108,92,231,.18);
+  }
+  .price-tier {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .price-amount {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+  .price-period { font-size: 18px; font-weight: 400; color: var(--muted); }
+  .price-desc { font-size: 14px; color: var(--text-2); line-height: 1.65; margin-bottom: 24px; }
+  .price-features { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .price-features li { font-size: 14px; color: var(--text-2); }
+  .price-features li::first-line { color: var(--green); }
+</style>
+
+<!-- FAQ -->
+<section id="faq" style="padding:100px 32px;background:var(--bg-2);border-top:1px solid var(--border);">
+  <div style="max-width:760px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:60px;">
+      <div class="label" style="margin-bottom:16px;">FAQ</div>
+      <h2 style="font-size:clamp(28px,4vw,48px);">You've probably got questions</h2>
+    </div>
+    <div id="faq-list" style="display:flex;flex-direction:column;gap:4px;">
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          How realistic are the AI-generated images?
+          <span class="faq-arrow">↓</span>
+        </button>
+        <div class="faq-a">Our engine delivers studio-quality output that is indistinguishable from traditional photography in most use cases. The Fit Scale and Drape Scale controls let you dial in exactly how the garment sits on the model — tight, relaxed or anywhere in between.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          What types of garments does Clad support?
+          <span class="faq-arrow">↓</span>
+        </button>
+        <div class="faq-a">Clad works with all standard garment categories: tops, bottoms, dresses, outerwear, knitwear, and accessories. Garments with complex textures (sequins, heavy pleating) may require the Refine mode for best results.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Do I need professional product photography to start?
+          <span class="faq-arrow">↓</span>
+        </button>
+        <div class="faq-a">No. You can shoot your garment on a flat surface, a hanger, or a mannequin with a regular smartphone camera. Clad handles the rest. The cleaner the input, the better the output — but you don't need a studio setup.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Who owns the generated images?
+          <span class="faq-arrow">↓</span>
+        </button>
+        <div class="faq-a">You do. All images generated through Clad are fully owned by you and your brand. You have the right to use them commercially across all channels — webshop, print, social media, marketplace listings, and beyond.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Can I use Clad for multiple brands or clients?
+          <span class="faq-arrow">↓</span>
+        </button>
+        <div class="faq-a">Yes. The Agency plan is designed exactly for this — manage multiple brand workspaces, custom AI model libraries per client, and white-label output. Contact us to set up a custom plan.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Is there a free trial?
+          <span class="faq-arrow">↓</span>
+        </button>
+        <div class="faq-a">Yes — your first 5 complete shoots are free with no credit card required. You'll get full access to all standard features so you can evaluate quality before committing to a plan.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq-item {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--surface);
+    margin-bottom: 4px;
+  }
+  .faq-q {
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: left;
+    padding: 20px 24px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    transition: color .2s;
+  }
+  .faq-q:hover { color: var(--purple-l); }
+  .faq-arrow { transition: transform .25s; color: var(--muted); flex-shrink: 0; font-size: 18px; }
+  .faq-a {
+    font-size: 15px;
+    color: var(--text-2);
+    line-height: 1.75;
+    padding: 0 24px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .3s ease, padding .3s;
+  }
+  .faq-item.open .faq-a { max-height: 300px; padding: 0 24px 20px; }
+  .faq-item.open .faq-arrow { transform: rotate(180deg); }
+</style>
+
+<script>
+  function toggleFaq(btn) {
+    const item = btn.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+</script>
+
+<!-- FINAL CTA -->
+<section style="padding:120px 32px;background:var(--bg);border-top:1px solid var(--border);text-align:center;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;height:500px;background:radial-gradient(ellipse at center,rgba(108,92,231,.15) 0%,transparent 70%);pointer-events:none;"></div>
+  <div style="max-width:640px;margin:0 auto;position:relative;z-index:1;">
+    <div class="label" style="margin-bottom:20px;">Get started today</div>
+    <h2 style="font-size:clamp(36px,5vw,60px);margin-bottom:20px;">Ready to shoot smarter?</h2>
+    <p style="font-size:18px;color:var(--text-2);margin-bottom:40px;line-height:1.7;">Join hundreds of fashion brands already saving weeks of production time and tens of thousands on studio costs.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;">
+      <a href="#" class="btn btn-primary btn-lg" style="font-size:16px;padding:16px 36px;">Get started free</a>
+      <a href="#" class="btn btn-outline btn-lg" style="font-size:16px;padding:16px 36px;">Book a demo</a>
+    </div>
+    <p style="font-size:13px;color:var(--muted);">First 5 shoots free &nbsp;·&nbsp; No credit card &nbsp;·&nbsp; Cancel anytime</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="background:var(--bg-2);border-top:1px solid var(--border);padding:60px 32px 32px;">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:56px;">
+
+      <div>
+        <a href="#" class="logo" style="display:inline-flex;margin-bottom:16px;">
+          <span class="logo-mark" style="margin-right:8px;">C</span>
+          CLAD
+        </a>
+        <p style="font-size:14px;color:var(--muted);line-height:1.7;max-width:280px;">AI Photo Studio for Fashion. Studio-quality garment photography, without the studio.</p>
+        <div style="display:flex;gap:12px;margin-top:24px;">
+          <a href="#" class="footer-social" aria-label="Instagram">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>
+          </a>
+          <a href="#" class="footer-social" aria-label="LinkedIn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+          </a>
+          <a href="#" class="footer-social" aria-label="X / Twitter">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;">Product</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;">
+          <li><a href="#features" class="footer-link">Features</a></li>
+          <li><a href="#how-it-works" class="footer-link">How it works</a></li>
+          <li><a href="#pricing" class="footer-link">Pricing</a></li>
+          <li><a href="#" class="footer-link">Changelog</a></li>
+          <li><a href="#" class="footer-link">API</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;">Use Cases</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;">
+          <li><a href="#use-cases" class="footer-link">E-commerce</a></li>
+          <li><a href="#use-cases" class="footer-link">Lookbook</a></li>
+          <li><a href="#use-cases" class="footer-link">Social Media</a></li>
+          <li><a href="#use-cases" class="footer-link">Marketplace</a></li>
+          <li><a href="#" class="footer-link">Agencies</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;">Company</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;">
+          <li><a href="#" class="footer-link">About</a></li>
+          <li><a href="#" class="footer-link">Contact</a></li>
+          <li><a href="#" class="footer-link">Privacy Policy</a></li>
+          <li><a href="#" class="footer-link">Terms of Service</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div style="border-top:1px solid var(--border);padding-top:28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <p style="font-size:13px;color:var(--muted);">© 2026 Clad Technologies. All rights reserved.</p>
+      <p style="font-size:13px;color:var(--muted);">Built for fashion. Powered by AI.</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer-link {
+    font-size: 14px;
+    color: var(--muted);
+    transition: color .2s;
+  }
+  .footer-link:hover { color: var(--text); }
+  .footer-social {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    transition: color .2s, border-color .2s;
+  }
+  .footer-social:hover { color: var(--text); border-color: var(--border-2); }
+
+  @media (max-width: 768px) {
+    footer > div > div:first-child { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 480px) {
+    footer > div > div:first-child { grid-template-columns: 1fr; }
+  }
+</style>
+
+</body>
+</html>
