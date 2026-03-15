@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 140" fill="none">
+  <rect width="480" height="140" fill="#0a0a14"/>
+  
+  <!-- ALT version: No box, just the flowing D mark -->
+  <g transform="translate(16, 12)">
+    <!-- D stem -->
+    <path d="M28 20 L28 96" stroke="url(#g2)" stroke-width="9" stroke-linecap="round"/>
+    
+    <!-- D outer curve -->
+    <path d="M28 20 C40 20, 58 22, 72 30 C88 40, 94 52, 94 58 C94 64, 88 76, 72 86 C58 94, 40 96, 28 96" stroke="url(#g2)" stroke-width="9" stroke-linecap="round" fill="none"/>
+    
+    <!-- 3 drape fold curves -->
+    <path d="M42 28 C48 38, 54 50, 52 58 C50 70, 44 82, 40 90" stroke="url(#g2fade1)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    <path d="M54 34 C60 44, 66 52, 64 60 C62 70, 56 80, 52 86" stroke="url(#g2fade2)" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <path d="M66 42 C72 50, 74 56, 72 62 C70 68, 66 76, 64 80" stroke="url(#g2fade3)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  </g>
+
+  <!-- "Drape" -->
+  <text x="130" y="72" font-family="'Space Grotesk', 'SF Pro Display', system-ui, sans-serif" font-size="52" font-weight="700" letter-spacing="-1" fill="#ffffff">Drape</text>
+  
+  <!-- "Studio" -->
+  <text x="132" y="106" font-family="'Inter', 'SF Pro Text', system-ui, sans-serif" font-size="19" font-weight="400" letter-spacing="6" fill="#6b6b80">STUDIO</text>
+  
+  <defs>
+    <linearGradient id="g2" x1="28" y1="20" x2="94" y2="96" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a29bfe"/>
+      <stop offset="100%" stop-color="#00cec9"/>
+    </linearGradient>
+    <linearGradient id="g2fade1" x1="42" y1="28" x2="42" y2="90" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="rgba(162,155,254,0.4)"/>
+      <stop offset="100%" stop-color="rgba(0,206,201,0.15)"/>
+    </linearGradient>
+    <linearGradient id="g2fade2" x1="54" y1="34" x2="54" y2="86" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="rgba(162,155,254,0.25)"/>
+      <stop offset="100%" stop-color="rgba(0,206,201,0.08)"/>
+    </linearGradient>
+    <linearGradient id="g2fade3" x1="66" y1="42" x2="66" y2="80" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="rgba(162,155,254,0.15)"/>
+      <stop offset="100%" stop-color="rgba(0,206,201,0.05)"/>
+    </linearGradient>
+  </defs>
+</svg>
