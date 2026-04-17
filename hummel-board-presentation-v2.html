@@ -561,11 +561,88 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- SLIDE 9: ROADMAP — ÉN SAMLET SLIDE                            -->
+<!-- SLIDE 9: MIGRATION STATUS                                      -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <div class="slide" data-index="8">
   <div class="max-w">
-    <div class="eyebrow">08 &mdash; Roadmap</div>
+    <div class="eyebrow">08 &mdash; Udviklingsstatus</div>
+    <h2 class="headline">Vi er <span class="accent-green">60% fremme</span> &mdash; kernen er på plads.</h2>
+    <p style="color:var(--muted);font-size:14px;margin:8px 0 18px;">Angular 21 frontend strukturelt komplet. Laravel backend godt i gang. Vi er nu i detalje-paritetsfasen.</p>
+
+    <!-- Overall progress -->
+    <div style="margin-bottom:18px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">Samlet fremgang</span>
+        <span style="font-family:'Space Grotesk',sans-serif;font-size:1.3rem;font-weight:700;color:var(--green);">60%</span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;">
+        <div style="width:60%;height:100%;background:linear-gradient(90deg,var(--purple),var(--green));border-radius:3px;"></div>
+      </div>
+    </div>
+
+    <div class="cols-2" style="margin-bottom:14px;">
+      <!-- Frontend -->
+      <div class="card" style="border-top:3px solid var(--green);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span style="font-size:18px;">&#x1F5A5;&#xFE0F;</span>
+          <div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green);">Frontend</div>
+            <div style="font-size:13px;font-weight:700;color:var(--white);">Angular 21 &mdash; strukturelt komplet</div>
+          </div>
+        </div>
+        <ul class="bullets" style="font-size:12.5px;">
+          <li>Alle moduler portet: Model/Style, Generator, Location, E-commerce Studio</li>
+          <li>Signals, standalone components, strict TypeScript</li>
+          <li><strong>1.200+ automatiserede tests</strong> sikrer stabilitet</li>
+          <li>~70 UI-paritetspunkter identificeret på tværs af 11 feature-områder</li>
+        </ul>
+      </div>
+      <!-- Backend -->
+      <div class="card" style="border-top:3px solid var(--purple);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span style="font-size:18px;">&#x2699;&#xFE0F;</span>
+          <div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--purple-l);">Backend</div>
+            <div style="font-size:13px;font-weight:700;color:var(--white);">Laravel &mdash; godt fremme</div>
+          </div>
+        </div>
+        <ul class="bullets" style="font-size:12.5px;">
+          <li>Auth, AI pipelines og Stripe billing er kørende</li>
+          <li>Implementerer Kaspers seneste frontend + backend-ændringer</li>
+          <li>Full kompatibilitet med opdaterede prompt-workflows</li>
+          <li>Løbende alignment med ny frontend-adfærd</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div style="background:rgba(253,203,110,.05);border:1px solid rgba(253,203,110,.2);border-radius:10px;padding:14px 18px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:10px;">&#x23F3; Resterende opgaver</div>
+        <ul class="bullets" style="font-size:12.5px;gap:7px;">
+          <li><strong>/ai/preview</strong> endpoint til live PromptHub-preview</li>
+          <li>Kaspers seneste frontend + backend/prompt-opdateringer</li>
+          <li>Email delivery (password reset + notifikationer)</li>
+          <li>Server-side billedbibliotek-API</li>
+        </ul>
+      </div>
+      <div style="background:rgba(0,184,148,.05);border:1px solid rgba(0,184,148,.2);border-radius:10px;padding:14px 18px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:10px;">&#x279C; N&aelig;ste skridt</div>
+        <ul class="bullets" style="font-size:12.5px;gap:7px;">
+          <li>Løs UI-paritetspunkter i parallel med Kasper-alignment</li>
+          <li>Færdiggør backend + prompt-opdateringer inkl. preview endpoint</li>
+          <li>End-to-end QA og produktionsklar tjek</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 10: ROADMAP — ÉN SAMLET SLIDE                           -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-index="9">
+  <div class="max-w">
+    <div class="eyebrow">09 &mdash; Roadmap</div>
     <h2 class="headline">3 sprints. <span class="accent-green">Første betalende kunder i uge 10.</span></h2>
     <p style="color:var(--muted);font-size:14px;margin:8px 0 24px;">Struktureret til at generere omsætning hurtigst muligt &mdash; ikke et perfekt produkt fra dag 1.</p>
 
@@ -647,11 +724,11 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- SLIDE 10: INVESTERING                                          -->
+<!-- SLIDE 11: INVESTERING                                          -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="slide" data-index="9">
+<div class="slide" data-index="10">
   <div class="max-w">
-    <div class="eyebrow">09 &mdash; Investering</div>
+    <div class="eyebrow">10 &mdash; Investering</div>
     <h2 class="headline">Fra MVP til marked: <span class="accent">~700 timer.</span></h2>
     <p style="color:var(--muted);font-size:14px;margin:8px 0 24px;">
       16 uger med et lille dedikeret team. AI-assisteret udvikling (Claude Code) accelererer processen.
@@ -697,11 +774,11 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- SLIDE 11: RISIKO & MOAT                                        -->
+<!-- SLIDE 12: RISIKO & MOAT                                        -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="slide" data-index="10">
+<div class="slide" data-index="11">
   <div class="max-w">
-    <div class="eyebrow">10 &mdash; Risiko &amp; Konkurrencefordel</div>
+    <div class="eyebrow">11 &mdash; Risiko &amp; Konkurrencefordel</div>
     <h2 class="headline">Hvad kan gå galt &mdash; og hvorfor vi <span class="accent-green">vinder.</span></h2>
     <p style="color:var(--muted);font-size:14px;margin:8px 0 24px;">Ærlig risikovurdering og de fordele der gør os svære at kopiere.</p>
     <div class="cols-2" style="margin-bottom:18px;">
@@ -765,9 +842,9 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- SLIDE 12: CLOSING / CTA                                        -->
+<!-- SLIDE 13: CLOSING / CTA                                        -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="slide" data-index="11">
+<div class="slide" data-index="12">
   <div style="text-align:center;position:relative;z-index:1;max-width:800px;">
     <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);width:700px;height:300px;background:radial-gradient(ellipse,rgba(0,184,148,.1) 0%,transparent 70%);pointer-events:none;"></div>
     <div class="pill"><span class="dot-live"></span>Beslutning</div>
